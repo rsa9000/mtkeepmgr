@@ -12,12 +12,27 @@
 #include <libgen.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "medump.h"
+
 static uint8_t eep_buf[0x1000];		/* 4k buffer */
 static unsigned eep_len;		/* Actual EERPOM size */
+
+uint16_t eep_read_word(const unsigned offset)
+{
+	uint16_t val;
+
+	if (offset >= eep_len)
+		return 0xffff;
+
+	memcpy(&val, &eep_buf[offset], sizeof(val));
+
+	return le16toh(val);
+}
 
 static int parse_file(const char *filename)
 {
