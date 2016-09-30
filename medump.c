@@ -19,6 +19,15 @@
 
 #include "medump.h"
 
+extern struct chip_desc __start___chips;
+extern struct chip_desc __stop___chips;
+
+#define for_each_chip(__chip)						\
+	for (__chip = &__start___chips; __chip < &__stop___chips;	\
+		     __chip = (struct chip_desc *)((char *)__chip +	\
+						   sizeof(struct chip_desc)))
+#define chip_is_null(__chip)	(__chip == &__stop___chips)
+
 static uint8_t eep_buf[0x1000];		/* 4k buffer */
 static unsigned eep_len;		/* Actual EERPOM size */
 

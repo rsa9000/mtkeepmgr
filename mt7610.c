@@ -11,3 +11,5 @@ static int mt7610_eep_parse(void)
 {
 	return 0;
 }
+
+CHIP(MT7610, 0x7610, mt7610_eep_parse);
