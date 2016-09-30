@@ -5,12 +5,67 @@
  */
 
 #include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
 #include <stdlib.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <stdint.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
+static uint8_t eep_buf[0x1000];		/* 4k buffer */
+static unsigned eep_len;		/* Actual EERPOM size */
 
 static int parse_file(const char *filename)
 {
+	int fd, ret;
+	struct stat stat;
+
+	fd = open(filename, O_RDONLY);
+	if (-1 == fd) {
+		fprintf(stderr, "Could not open input file %s: %s\n",
+			filename, strerror(errno));
+		return -1;
+	}
+
+	if (fstat(fd, &stat)) {
+		fprintf(stderr, "Could not stat file %s: %s\n",
+			filename, strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	if (!stat.st_size) {
+		fprintf(stderr, "Input file is empty");
+		close(fd);
+		return -1;
+	}
+
+	if (stat.st_size > sizeof(eep_buf)) {
+		fprintf(stderr, "Input file too big (%lu bytes), expect not more than %u bytes, file will be readed partially\n",
+			stat.st_size, sizeof(eep_buf));
+		eep_len = sizeof(eep_buf);
+	} else if (stat.st_size % 2 != 0) {
+		fprintf(stderr, "Input file size is not even (%lu bytes), will read one byte less\n",
+			stat.st_size);
+		eep_len = stat.st_size - 1;
+	} else {
+		eep_len = stat.st_size;
+	}
+
+	ret = read(fd, eep_buf, eep_len);
+	if (ret != eep_len) {
+		fprintf(stderr, "Could not read input file: %s\n",
+			strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+
 	return 0;
 }
 
