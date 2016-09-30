@@ -9,8 +9,16 @@
 
 #include <stdint.h>
 
+#define FIELD_GET(__field, __val)	(((__val) & __field) >> __field ## _S)
+
 /* Common EEPROM locations */
 #define E_CHIPID			0x0000
+
+#define E_VERSION			0x0002
+#define E_VERSION_VERSION		0xff00
+#define E_VERSION_VERSION_S		8
+#define E_VERSION_REVISION		0x00ff
+#define E_VERSION_REVISION_S		0
 
 uint16_t eep_read_word(const unsigned offset);
 

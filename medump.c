@@ -47,7 +47,7 @@ static int parse_file(const char *filename)
 {
 	int fd, ret;
 	struct stat stat;
-	uint16_t chipid;
+	uint16_t chipid, version;
 	struct chip_desc *chip;
 
 	fd = open(filename, O_RDONLY);
@@ -96,6 +96,10 @@ static int parse_file(const char *filename)
 
 	chipid = eep_read_word(E_CHIPID);
 	printf("  ChipID        : 0x%04x\n", chipid);
+	version = eep_read_word(E_VERSION);
+	printf("  Version       : %u.%u\n",
+	       FIELD_GET(E_VERSION_VERSION, version),
+	       FIELD_GET(E_VERSION_REVISION, version));
 
 	for_each_chip(chip)
 		if (chip->chipid == chipid)
