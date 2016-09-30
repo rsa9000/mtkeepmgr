@@ -47,6 +47,8 @@ static int parse_file(const char *filename)
 {
 	int fd, ret;
 	struct stat stat;
+	uint16_t chipid;
+	struct chip_desc *chip;
 
 	fd = open(filename, O_RDONLY);
 	if (-1 == fd) {
@@ -90,7 +92,25 @@ static int parse_file(const char *filename)
 
 	close(fd);
 
-	return 0;
+	printf("[EEPROM identification]\n");
+
+	chipid = eep_read_word(E_CHIPID);
+	printf("  ChipID        : 0x%04x\n", chipid);
+
+	for_each_chip(chip)
+		if (chip->chipid == chipid)
+			break;
+
+	if (chip_is_null(chip)) {
+		fprintf(stderr, "EEPROM dump is for unknown or unsupported chip\n");
+		return -1;
+	}
+
+	printf("  Chip          : %s\n", chip->name);
+
+	printf("\n");
+
+	return chip->parse_func();
 }
 
 static void usage(const char *name)

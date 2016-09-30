@@ -9,6 +9,9 @@
 
 #include <stdint.h>
 
+/* Common EEPROM locations */
+#define E_CHIPID			0x0000
+
 uint16_t eep_read_word(const unsigned offset);
 
 struct chip_desc {
