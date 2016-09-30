@@ -20,6 +20,10 @@
 #define E_VERSION_REVISION		0x00ff
 #define E_VERSION_REVISION_S		0
 
+#define E_MACADDR_15_00			0x0004
+#define E_MACADDR_31_16			0x0006
+#define E_MACADDR_47_32			0x0008
+
 uint16_t eep_read_word(const unsigned offset);
 
 struct chip_desc {
