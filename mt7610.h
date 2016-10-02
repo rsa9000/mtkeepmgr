@@ -90,4 +90,20 @@
 #define E_LNA_GAIN_5G_2		0xff00	/* CH132-CH165, dB */
 #define E_LNA_GAIN_5G_2_S	8
 
+/* For 40MHz/80MHz power delta unpacking */
+#define E_PWR_DELTA_VAL		0x3f	/* 0.5 dBm */
+#define E_PWR_DELTA_VAL_S	0
+#define E_PWR_DELTA_SIGN	BIT(6)	/* 0 - decrease, 1 - increase */
+#define E_PWR_DELTA_EN		BIT(7)
+
+#define E_40M_PWR_DELTA		0x0050	/* 20/40 Tx Power Delta */
+#define E_40M_PWR_DELTA_2G	0x00ff	/* See E_PWR_DELTA_xxx */
+#define E_40M_PWR_DELTA_2G_S	0
+#define E_40M_PWR_DELTA_5G	0xff00	/* See E_PWR_DELTA_xxx */
+#define E_40M_PWR_DELTA_5G_S	8
+
+#define E_80M_PWR_DELTA		0x00d2	/* 20/80 Tx Power Delta */
+#define E_80M_PWR_DELTA_5G	0xff00	/* See E_PWR_DELTA_xxx */
+#define E_80M_PWR_DELTA_5G_S	8
+
 #endif	/* !_MT7610_H_ */

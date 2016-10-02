@@ -10,6 +10,30 @@
 #include "utils.h"
 #include "mt7610.h"
 
+/* Return power delta in 0.5 dBm step */
+static int pwr_delta_unpack(const uint8_t val)
+{
+	if (!(val & E_PWR_DELTA_EN))
+		return 0;
+
+	return val & E_PWR_DELTA_SIGN ? FIELD_GET(E_PWR_DELTA_VAL, val):
+					-1 * FIELD_GET(E_PWR_DELTA_VAL, val);
+}
+
+static const char *pwr_delta_str(const uint8_t val)
+{
+	static char buf[0x10];
+	int delta;
+
+	if (0xff == val)
+		return "0 dBm (default)";
+
+	delta = pwr_delta_unpack(val);
+	snprintf(buf, sizeof(buf), "%.1f dBm", (double)delta / 2);
+
+	return buf;
+}
+
 static int mt7610_eep_parse(void)
 {
 	uint16_t val;
@@ -86,6 +110,17 @@ static int mt7610_eep_parse(void)
 	val = eep_read_word(E_RSSI_OFFSET_5G);
 	printf("  5GHz Offset0  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_5G_0, val));
 	printf("  5GHz Offset1  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_5G_1, val));
+	printf("\n");
+
+	printf("[Tx power delta]\n");
+	val = eep_read_word(E_40M_PWR_DELTA);
+	printf("  2GHz 40MHz    : %s\n",
+		pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_2G, val)));
+	printf("  5GHz 40MHz    : %s\n",
+	       pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_5G, val)));
+	val = eep_read_word(E_80M_PWR_DELTA);
+	printf("  5GHz 80MHz    : %s\n",
+	       pwr_delta_str(FIELD_GET(E_80M_PWR_DELTA_5G, val)));
 	printf("\n");
 
 	return 0;
