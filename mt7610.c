@@ -23,6 +23,8 @@ static int mt7610_eep_parse(void)
 	printf("\n");
 
 	printf("[Device configuration]\n");
+	printf("  CMB aux option: 0x%04x\n", eep_read_word(E_CMB_AUX_OPT));
+	printf("  XTAL opt???   : 0x%04x\n", eep_read_word(E_XTAL_OPT));
 	val = eep_read_word(E_NIC_CFG0);
 	printf("  RxPath        : %u\n", FIELD_GET(E_NIC_CFG0_RX_PATH, val));
 	printf("  TxPath        : %u\n", FIELD_GET(E_NIC_CFG0_TX_PATH, val));

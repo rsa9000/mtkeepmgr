@@ -13,6 +13,10 @@
 #define E_PCI_SUB_DEV_ID	0x0012
 #define E_PCI_SUB_VEN_ID	0x0014
 
+#define E_CMB_AUX_OPT		0x0022	/* Use for CMB_CTRL reg prog */
+
+#define E_XTAL_OPT		0x0024	/* Use for 0x0104 reg prog */
+
 #define E_NIC_CFG0		0x0034
 #define E_NIC_CFG0_RX_PATH	0x000f
 #define E_NIC_CFG0_RX_PATH_S	0
