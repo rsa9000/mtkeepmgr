@@ -102,6 +102,53 @@
 #define E_40M_PWR_DELTA_5G	0xff00	/* See E_PWR_DELTA_xxx */
 #define E_40M_PWR_DELTA_5G_S	8
 
+/**
+ * Per channel power table consists of several parts:
+ * - 2GHz channels (1 - 14)
+ * - 5GHz low channels (36 - 64)
+ * - 5GHz middle channels (100 - 140)
+ * - 5GHz hight channels (149 - 173)
+ *
+ * Each EEPROM word contains power for two channels. First channel of pair is
+ * stored in low part, and second channel stored in hight part of word.
+ *
+ * Note: 5GHz subbands located in EEPROM back to back, so we could treat them
+ * as single big table (in any case channels should be specified by table since
+ * there are no analytical expression for them)
+ */
+
+#define E_CH_PWR_LO		0x00ff	/* Low part of word */
+#define E_CH_PWR_LO_S		0
+#define E_CH_PWR_HI		0xff00	/* Hight part of word */
+#define E_CH_PWR_HI_S		8
+
+#define E_CH_PWR_MAX		0x3f	/* Maximum valid value */
+#define E_CH_PWR_DEFAULT	5	/* Def. value if EEP is out of range */
+
+/**
+ * Power table for channels in 2.4GHz band
+ * Channels: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+ */
+#define E_CH_PWR_2G_BASE	0x0052
+
+/**
+ * Power table for channels in 5GHz low subband
+ * Channels: 36, 38, 40, 44, 46, 48, 52, 54, 56, 60, 62, 64
+ */
+#define E_CH_PWR_5G_0_BASE	0x0078
+
+/**
+ * Power table for channels in 5GHz middle subband
+ * Channels: 100, 102, 104, 108, 110, 112, 116, 118, 120, 124, 126, 128, 132, 134, 136, 140
+ */
+#define E_CH_PWR_5G_1_BASE	0x0084
+
+/**
+ * Power table for channels in 5GHz hight subband
+ * Channels: 149, 151, 153, 157, 159, 161, 165, 167, 169, 171, 173
+ */
+#define E_CH_PWR_5G_2_BASE	0x0094
+
 #define E_80M_PWR_DELTA		0x00d2	/* 20/80 Tx Power Delta */
 #define E_80M_PWR_DELTA_5G	0xff00	/* See E_PWR_DELTA_xxx */
 #define E_80M_PWR_DELTA_5G_S	8

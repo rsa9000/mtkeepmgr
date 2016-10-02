@@ -34,6 +34,69 @@ static const char *pwr_delta_str(const uint8_t val)
 	return buf;
 }
 
+static void mt7610_dump_channel_power(void)
+{
+	static const unsigned ch_2gh[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+					  12, 13, 14};
+	static const unsigned ch_5gh_0[] = {36, 38, 40, 44, 46, 48, 52, 54, 56,
+					    60, 62, 64};
+	static const unsigned ch_5gh_1[] = {100, 102, 104, 108, 110, 112, 116,
+					    118, 120, 124, 126, 128, 132, 134,
+					    136, 140};
+	static const unsigned ch_5gh_2[] = {149, 151, 153, 157, 159, 161, 165,
+					    167, 169, 171, 173};
+	static const struct {
+		const char *name;	/* Subband name */
+		unsigned ee_base;	/* EEPROM base offset */
+		unsigned const *ch;	/* Channels array */
+		unsigned nchan;		/* Number of channels */
+	} *sb, subbands[] = {
+		{
+			.name = "2.4 GHz",
+			.ee_base = E_CH_PWR_2G_BASE,
+			.ch = ch_2gh,
+			.nchan = sizeof(ch_2gh)/sizeof(ch_2gh[0]),
+		}, {
+			.name = "5 GHz (low)",
+			.ee_base = E_CH_PWR_5G_0_BASE,
+			.ch = ch_5gh_0,
+			.nchan = sizeof(ch_5gh_0)/sizeof(ch_5gh_0[0]),
+		}, {
+			.name = "5 GHz (middle)",
+			.ee_base = E_CH_PWR_5G_1_BASE,
+			.ch = ch_5gh_1,
+			.nchan = sizeof(ch_5gh_1)/sizeof(ch_5gh_1[0]),
+		}, {
+			.name = "5 GHz (hight)",
+			.ee_base = E_CH_PWR_5G_2_BASE,
+			.ch = ch_5gh_2,
+			.nchan = sizeof(ch_5gh_2)/sizeof(ch_5gh_2[0]),
+		}
+	};
+	unsigned pwr[0x10];	/* size = MAX(2G, 5G0, 5G1, 5G2) */
+	unsigned si, ci;
+	uint16_t eeval;
+
+	for (si = 0; si < sizeof(subbands)/sizeof(subbands[0]); ++si) {
+		sb = &subbands[si];
+		printf("  Subband: %s\n", sb->name);
+		for (ci = 0; ci < sb->nchan; ci += 2) {
+			eeval = eep_read_word(sb->ee_base + ci);
+			pwr[ci + 0] = FIELD_GET(E_CH_PWR_LO, eeval);
+			pwr[ci + 1] = FIELD_GET(E_CH_PWR_HI, eeval);
+		}
+		printf("  Channel: ");
+		for (ci = 0; ci < sb->nchan; ++ci)
+			printf(" %3u", sb->ch[ci]);
+		printf("\n");
+		printf("  Power  : ");
+		for (ci = 0; ci < sb->nchan; ++ci)
+			printf(" %3u", pwr[ci] > E_CH_PWR_MAX ?
+				       E_CH_PWR_DEFAULT : pwr[ci]);
+		printf("\n");
+	}
+}
+
 static int mt7610_eep_parse(void)
 {
 	uint16_t val;
@@ -121,6 +184,10 @@ static int mt7610_eep_parse(void)
 	val = eep_read_word(E_80M_PWR_DELTA);
 	printf("  5GHz 80MHz    : %s\n",
 	       pwr_delta_str(FIELD_GET(E_80M_PWR_DELTA_5G, val)));
+	printf("\n");
+
+	printf("[Per channel power table]\n");
+	mt7610_dump_channel_power();
 	printf("\n");
 
 	return 0;
