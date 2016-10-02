@@ -69,6 +69,25 @@ static int mt7610_eep_parse(void)
 		printf("  2GHz country  : %u\n", FIELD_GET(E_COUNTRY_REGION_2G, val));
 	printf("\n");
 
+	printf("[External LNA gain]\n");
+	val = eep_read_word(E_LNA_GAIN_0);
+	printf("  2GHz (1-14)   : %u dB\n", FIELD_GET(E_LNA_GAIN_2G, val));
+	printf("  5GHz (36-46)  : %u dB\n", FIELD_GET(E_LNA_GAIN_5G_0, val));
+	val = eep_read_word(E_LNA_GAIN_1);
+	printf("  5GHz (100-128): %u dB\n", FIELD_GET(E_LNA_GAIN_5G_1, val));
+	val = eep_read_word(E_LNA_GAIN_2);
+	printf("  5GHz (132-165): %u dB\n", FIELD_GET(E_LNA_GAIN_5G_2, val));
+	printf("\n");
+
+	printf("[BBP RSSI offsets]\n");
+	val = eep_read_word(E_RSSI_OFFSET_2G);
+	printf("  2GHz Offset0  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_2G_0, val));
+	printf("  2GHz Offset1  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_2G_1, val));
+	val = eep_read_word(E_RSSI_OFFSET_5G);
+	printf("  5GHz Offset0  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_5G_0, val));
+	printf("  5GHz Offset1  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_5G_1, val));
+	printf("\n");
+
 	return 0;
 }
 

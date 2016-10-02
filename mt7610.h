@@ -64,4 +64,30 @@
 #define E_NIC_CFG2_XTAL_OPT_S	9
 #define E_NIC_CFG2_RXTEMP_C_DIS	BIT(11)	/* Rx temp compensation dis. */
 
+#define E_LNA_GAIN_0		0x0044
+#define E_LNA_GAIN_2G		0x00ff	/* dB */
+#define E_LNA_GAIN_2G_S		0
+#define E_LNA_GAIN_5G_0		0xff00	/* CH36-CH46, dB */
+#define E_LNA_GAIN_5G_0_S	8
+
+#define E_RSSI_OFFSET_2G	0x0046
+#define E_RSSI_OFFSET_2G_0	0x00ff	/* dB */
+#define E_RSSI_OFFSET_2G_0_S	0
+#define E_RSSI_OFFSET_2G_1	0xff00	/* dB */
+#define E_RSSI_OFFSET_2G_1_S	8
+
+#define E_LNA_GAIN_1		0x0048
+#define E_LNA_GAIN_5G_1		0xff00	/* CH100-CH128, dB */
+#define E_LNA_GAIN_5G_1_S	8
+
+#define E_RSSI_OFFSET_5G	0x004a
+#define E_RSSI_OFFSET_5G_0	0x00ff	/* dB */
+#define E_RSSI_OFFSET_5G_0_S	0
+#define E_RSSI_OFFSET_5G_1	0xff00	/* dB */
+#define E_RSSI_OFFSET_5G_1_S	8
+
+#define E_LNA_GAIN_2		0x004c
+#define E_LNA_GAIN_5G_2		0xff00	/* CH132-CH165, dB */
+#define E_LNA_GAIN_5G_2_S	8
+
 #endif	/* !_MT7610_H_ */
