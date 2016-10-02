@@ -4,7 +4,7 @@ OBJ=	medump.o	\
 	mt7610.o	\
 	utils.o
 
-CFLAGS += -Wall
+CFLAGS += -Wall -g
 
 .PHONY: all
 all: $(TARGET)
