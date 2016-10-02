@@ -54,6 +54,18 @@ static int mt7610_eep_parse(void)
 	printf("  RxTempCompens.: %s\n", val & E_NIC_CFG2_RXTEMP_C_DIS ? "Disable" : "Enable");
 	printf("\n");
 
+	printf("[Country region code]\n");
+	val = eep_read_word(E_COUNTRY_REGION);
+	if (FIELD_GET(E_COUNTRY_REGION_5G, val) == 0xff)
+		printf("  5GHz country  : <none>\n");
+	else
+		printf("  5GHz country  : %u\n", FIELD_GET(E_COUNTRY_REGION_5G, val));
+	if (FIELD_GET(E_COUNTRY_REGION_2G, val) == 0xff)
+		printf("  2GHz country  : <none>\n");
+	else
+		printf("  2GHz country  : %u\n", FIELD_GET(E_COUNTRY_REGION_2G, val));
+	printf("\n");
+
 	return 0;
 }
 
