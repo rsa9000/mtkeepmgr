@@ -55,6 +55,7 @@
 #define E_NIC_CFG2_TX_STREAM	0x00f0
 #define E_NIC_CFG2_TX_STREAM_S	4
 #define E_NIC_CFG2_COEX_ANT	BIT(8)
+#define E_NIC_CFG2_CAL_IN_FLASH	BIT(12)
 #define E_NIC_CFG2_XTAL_OPT	0x0600
 #define E_NIC_CFG2_XTAL_OPT_S	9
 #define E_NIC_CFG2_RXTEMP_C_DIS	BIT(11)	/* Rx temp compensation dis. */
