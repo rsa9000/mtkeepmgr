@@ -53,6 +53,8 @@ static int mt7610_eep_parse(void)
 	printf("  CalibInFlash  : %s\n", val & E_NIC_CFG2_CAL_IN_FLASH ? "True" : "False");
 	printf("  XtalOpt       : %u\n", FIELD_GET(E_NIC_CFG2_XTAL_OPT, val));
 	printf("  RxTempCompens.: %s\n", val & E_NIC_CFG2_RXTEMP_C_DIS ? "Disable" : "Enable");
+	val = eep_read_word(E_FREQ_OFFSET);
+	printf("  FreqOffset    : 0x%02x\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
 	printf("\n");
 
 	printf("[Country region code]\n");

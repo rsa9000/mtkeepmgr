@@ -49,6 +49,10 @@
 #define E_COUNTRY_REGION_2G	0xff00
 #define E_COUNTRY_REGION_2G_S	8
 
+#define E_FREQ_OFFSET		0x003a
+#define E_FREQ_OFFSET_FO	0x00ff	/* Frequency offset */
+#define E_FREQ_OFFSET_FO_S	0
+
 #define E_NIC_CFG2		0x0042
 #define E_NIC_CFG2_RX_STREAM	0x000f
 #define E_NIC_CFG2_RX_STREAM_S	0
