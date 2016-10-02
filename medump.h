@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#define BIT(__n)			(1 << (__n))
+
 #define FIELD_GET(__field, __val)	(((__val) & __field) >> __field ## _S)
 
 /* Common EEPROM locations */
