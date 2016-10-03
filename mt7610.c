@@ -144,6 +144,9 @@ static int mt7610_eep_parse(void)
 	printf("  FreqOffset    : 0x%02x\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
 	val = eep_read_word(E_TEMP_OFFSET);
 	printf("  TempOffset    : %d\n", (int8_t)FIELD_GET(E_TEMP_OFFSET_VAL, val));
+	val = eep_read_word(E_5G_SUBBANDS);
+	printf("  5GHz mid chan : %u\n", FIELD_GET(E_5G_SUBBANDS_MID_CH, val));
+	printf("  5GHz higt chan: %u\n", FIELD_GET(E_5G_SUBBANDS_HIG_CH, val));
 	printf("\n");
 
 	printf("[Country region code]\n");
