@@ -142,6 +142,8 @@ static int mt7610_eep_parse(void)
 	printf("  RxTempCompens.: %s\n", val & E_NIC_CFG2_RXTEMP_C_DIS ? "Disable" : "Enable");
 	val = eep_read_word(E_FREQ_OFFSET);
 	printf("  FreqOffset    : 0x%02x\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
+	val = eep_read_word(E_TEMP_OFFSET);
+	printf("  TempOffset    : %d\n", (int8_t)FIELD_GET(E_TEMP_OFFSET_VAL, val));
 	printf("\n");
 
 	printf("[Country region code]\n");
