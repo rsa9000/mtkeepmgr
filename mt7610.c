@@ -34,6 +34,23 @@ static const char *pwr_delta_str(const uint8_t val)
 	return buf;
 }
 
+/* Return power delta in 0.5 dBm step */
+static int pwr_rate_unpack(const uint8_t val)
+{
+	return val & E_RATE_PWR_SIGN ? FIELD_GET(E_RATE_PWR_VAL, val) - 32:
+				       FIELD_GET(E_RATE_PWR_VAL, val);
+}
+
+static const char *pwr_rate_str(const uint8_t val)
+{
+	static char buf[0x10];
+	int pwr = pwr_rate_unpack(val);
+
+	snprintf(buf, sizeof(buf), "%.1f", (double)pwr / 2);
+
+	return buf;
+}
+
 static void mt7610_dump_channel_power(void)
 {
 	static const unsigned ch_2gh[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -94,6 +111,63 @@ static void mt7610_dump_channel_power(void)
 			printf(" %3u", pwr[ci] > E_CH_PWR_MAX ?
 				       E_CH_PWR_DEFAULT : pwr[ci]);
 		printf("\n");
+	}
+}
+
+static void mt7610_dump_rate_power(void)
+{
+	static const char *blocks[3] = {"2.4GHz", "5GHz", "STBC"};
+	static const struct {
+		const char *title_lo;
+		const char *title_hi;
+		unsigned off[3];	/* 2GHz, 5GHz, STBC */
+	} *r, rates[] = {
+		{
+			"CCK 1M/2M", "CCK 5.5M/11M",
+			{E_RATE_PWR_2G_CCK_1_55, 0, 0}
+		}, {
+			"OFDM 6M/9M", "OFDM 12M/18M",
+			{E_RATE_PWR_2G_OFDM_6_12, E_RATE_PWR_5G_OFDM_6_12, 0},
+		}, {
+			"OFDM 24M/36M", "OFDM 48M",
+			{E_RATE_PWR_2G_OFDM_24_48, E_RATE_PWR_5G_OFDM_24_48, 0},
+		}, {
+			"HT/VHT MCS 0/1", "HT/VHT MCS 2/3",
+			{E_RATE_PWR_2G_MCS_0_2, E_RATE_PWR_5G_MCS_0_2, E_RATE_PWR_STBC_MCS_0_2}
+		}, {
+			"HT/VHT MCS 4/5", "HT/VHT MCS 6",
+			{E_RATE_PWR_2G_MCS_4_6, E_RATE_PWR_5G_MCS_4_6, E_RATE_PWR_STBC_MCS_4_6}
+		}, {
+			"VHT MCS8", "VHT MCS9",
+			{0, E_RATE_PWR_5G_VHT_8_9, 0}
+		}, {
+			NULL, NULL
+		}
+	};
+	uint16_t val[3];
+	unsigned i;
+
+	printf("                   ");
+	for (i = 0; i < 3; ++i)
+		printf("%10s", blocks[i]);
+	printf("\n");
+
+	for (r = rates; r->title_lo || r->title_hi; ++r) {
+		for (i = 0; i < 3; ++i)
+			if (r->off[i])
+				val[i] = eep_read_word(r->off[i]);
+		if (r->title_lo) {
+			printf("  %-16s:", r->title_lo);
+			for (i = 0; i < 3; ++i)
+				printf("%10s", r->off[i] ? pwr_rate_str(FIELD_GET(E_RATE_PWR_LO, val[i])) : "");
+			printf("\n");
+		}
+		if (r->title_hi) {
+			printf("  %-16s:", r->title_hi);
+			for (i = 0; i < 3; ++i)
+				printf("%10s", r->off[i] ? pwr_rate_str(FIELD_GET(E_RATE_PWR_HI, val[i])) : "");
+			printf("\n");
+		}
 	}
 }
 
@@ -193,6 +267,10 @@ static int mt7610_eep_parse(void)
 
 	printf("[Per channel power table]\n");
 	mt7610_dump_channel_power();
+	printf("\n");
+
+	printf("[Per rate power table]\n");
+	mt7610_dump_rate_power();
 	printf("\n");
 
 	return 0;

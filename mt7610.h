@@ -163,4 +163,40 @@
 #define E_5G_SUBBANDS_HIG_CH	0xff00	/* High channel value */
 #define E_5G_SUBBANDS_HIG_CH_S	8
 
+/**
+ * Per rate power table consists of several parts:
+ * - 2GHz CCK, OFDM, HT/VHT MCS rates
+ * - 2/5GHz STBC MCS rates
+ * - 5GHz OFDM, HT/VHT MCS rates
+ * - 5GHz VHT MCS8,9 rates
+ *
+ * Each EEPROM word contains values for two rates. Each rate power value
+ */
+#define E_RATE_PWR_LO		0x00ff
+#define E_RATE_PWR_LO_S		0
+#define E_RATE_PWR_HI		0xff00
+#define E_RATE_PWR_HI_S		8
+
+#define E_RATE_PWR_VAL		0x1f
+#define E_RATE_PWR_VAL_S	0
+#define E_RATE_PWR_SIGN		0x20
+
+#define E_RATE_PWR_2G_BASE	0x00de
+#define E_RATE_PWR_2G_CCK_1_55	(E_RATE_PWR_2G_BASE + 0)
+#define E_RATE_PWR_2G_OFDM_6_12	(E_RATE_PWR_2G_BASE + 2)
+#define E_RATE_PWR_2G_OFDM_24_48	(E_RATE_PWR_2G_BASE + 4)
+#define E_RATE_PWR_2G_MCS_0_2	(E_RATE_PWR_2G_BASE + 6)
+#define E_RATE_PWR_2G_MCS_4_6	(E_RATE_PWR_2G_BASE + 8)
+
+#define E_RATE_PWR_STBC_BASE	0x00ec
+#define E_RATE_PWR_STBC_MCS_0_2	(E_RATE_PWR_STBC_BASE + 0)
+#define E_RATE_PWR_STBC_MCS_4_6	(E_RATE_PWR_STBC_BASE + 2)
+
+#define E_RATE_PWR_5G_BASE	0x0120
+#define E_RATE_PWR_5G_OFDM_6_12	(E_RATE_PWR_5G_BASE + 0)
+#define E_RATE_PWR_5G_OFDM_24_48	(E_RATE_PWR_5G_BASE + 2)
+#define E_RATE_PWR_5G_MCS_0_2	(E_RATE_PWR_5G_BASE + 4)
+#define E_RATE_PWR_5G_MCS_4_6	(E_RATE_PWR_5G_BASE + 6)
+#define E_RATE_PWR_5G_VHT_8_9	(E_RATE_PWR_5G_BASE + 12)
+
 #endif	/* !_MT7610_H_ */
