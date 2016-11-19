@@ -10,6 +10,9 @@
 #include "utils.h"
 #include "mt7610.h"
 
+/* Preserved values for further calculations */
+static int8_t temp_offset;		/* Temperature offset */
+
 /* Return power delta in 0.5 dBm step */
 static int pwr_delta_unpack(const uint8_t val)
 {
@@ -217,7 +220,8 @@ static int mt7610_eep_parse(void)
 	val = eep_read_word(E_FREQ_OFFSET);
 	printf("  FreqOffset    : 0x%02x\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
 	val = eep_read_word(E_TEMP_OFFSET);
-	printf("  TempOffset    : %d\n", (int8_t)FIELD_GET(E_TEMP_OFFSET_VAL, val));
+	temp_offset = (int8_t)FIELD_GET(E_TEMP_OFFSET_VAL, val);
+	printf("  TempOffset    : %d\n", temp_offset);
 	val = eep_read_word(E_5G_SUBBANDS);
 	printf("  5GHz mid chan : %u\n", FIELD_GET(E_5G_SUBBANDS_MID_CH, val));
 	printf("  5GHz higt chan: %u\n", FIELD_GET(E_5G_SUBBANDS_HIG_CH, val));
