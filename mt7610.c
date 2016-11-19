@@ -174,6 +174,72 @@ static void mt7610_dump_rate_power(void)
 	}
 }
 
+static void mt7610_read_tssi_tcomp_tbl(unsigned off, int8_t *tbl)
+{
+	uint16_t val;
+	int i, j = 0;
+
+	/* Read minus (below reference) part */
+	for (i = 0; i < E_TSSI_TCOMP_N / 2; ++i) {
+		if (i % 2 == 0) {
+			val = eep_read_word(off + 2 * j++);
+			tbl[i] = (val >> 0) & 0xff;
+		} else {
+			tbl[i] = (val >> 8) & 0xff;
+		}
+	}
+
+	/* Zero neutral element */
+	tbl[E_TSSI_TCOMP_N / 2] = 0;
+
+	/* Read plus (above reference) part */
+	for (i = E_TSSI_TCOMP_N / 2 + 1; i < E_TSSI_TCOMP_N + 1; ++i) {
+		if (i % 2 == 0) {
+			tbl[i] = (val >> 8) & 0xff;
+		} else {
+			val = eep_read_word(off + 2 * j++);
+			tbl[i] = (val >> 0) & 0xff;
+		}
+	}
+}
+
+static void mt7610_adj_tssi_tcomp_tbl(int8_t *tbl)
+{
+	int i, tmp;
+
+	for (i = 0; i < E_TSSI_TCOMP_N + 1; ++i) {
+		tmp = (int)tbl[i] + temp_offset;
+		if (tmp < E_TSSI_TCOMP_VAL_MIN)
+			tbl[i] = E_TSSI_TCOMP_VAL_MIN;
+		else if (tmp > E_TSSI_TCOMP_VAL_MAX)
+			tbl[i] = E_TSSI_TCOMP_VAL_MAX;
+		else
+			tbl[i] = tmp;
+	}
+}
+
+static const char *mt7610_dump_tssi_tcomp_tbl(int8_t *tbl)
+{
+	static char buf[0x80];
+	char *p = buf, *e = buf + sizeof(buf);
+	unsigned i;
+
+	for (i = 0; i < E_TSSI_TCOMP_N + 1; ++i)
+		p += snprintf(p, e - p, " %+4d", tbl[i]);
+
+	return &buf[1];
+}
+
+static const char *mt7610_dump_tssi_tcomp(unsigned off)
+{
+	int8_t tbl[E_TSSI_TCOMP_N + 1];	/* Number of points + neutral */
+
+	mt7610_read_tssi_tcomp_tbl(off, tbl);
+	mt7610_adj_tssi_tcomp_tbl(tbl);
+
+	return mt7610_dump_tssi_tcomp_tbl(tbl);
+}
+
 static int mt7610_eep_parse(void)
 {
 	uint16_t val;
@@ -275,6 +341,22 @@ static int mt7610_eep_parse(void)
 
 	printf("[Per rate power table]\n");
 	mt7610_dump_rate_power();
+	printf("\n");
+
+	printf("[TSSI temperature compensation]\n");
+	val = eep_read_word(E_TX_AGC_STEP);
+	if (FIELD_GET(E_TX_AGC_STEP_VAL, val) == 0xff)
+		printf("  Tx AGC step   : 1.0 dBm (default)\n");
+	else
+		printf("  Tx AGC step   : %u.%u dBm\n",
+		       FIELD_GET(E_TX_AGC_STEP_VAL, val) / 2,
+		       FIELD_GET(E_TX_AGC_STEP_VAL, val) & 1 ? 5 : 0);
+	val = eep_read_word(E_TSSI_TCOMP_5G_BOUND);
+	printf("  5GHz boundary : %u (channel)\n", FIELD_GET(E_TSSI_TCOMP_5G_BOUND_VAL, val));
+	printf("  5GHz group 1  : {%s}\n",
+	       mt7610_dump_tssi_tcomp(E_TSSI_TCOMP_5G_1_BASE));
+	printf("  5GHz group 2  : {%s}\n",
+	       mt7610_dump_tssi_tcomp(E_TSSI_TCOMP_5G_2_BASE));
 	printf("\n");
 
 	return 0;

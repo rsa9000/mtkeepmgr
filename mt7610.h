@@ -199,4 +199,18 @@
 #define E_RATE_PWR_5G_MCS_4_6	(E_RATE_PWR_5G_BASE + 6)
 #define E_RATE_PWR_5G_VHT_8_9	(E_RATE_PWR_5G_BASE + 12)
 
+#define E_TSSI_TCOMP_N		14	/* Number of points */
+#define E_TSSI_TCOMP_VAL_MIN	-128
+#define E_TSSI_TCOMP_VAL_MAX	127
+#define E_TSSI_TCOMP_5G_1_BASE	0x00f0
+#define E_TSSI_TCOMP_5G_2_BASE	0x00fe
+
+#define E_TSSI_TCOMP_5G_BOUND	0x010c	/* 5GHz boundary channel */
+#define E_TSSI_TCOMP_5G_BOUND_VAL	0x00ff
+#define E_TSSI_TCOMP_5G_BOUND_VAL_S	0
+
+#define E_TX_AGC_STEP		0x010e	/* Tx AGC step */
+#define E_TX_AGC_STEP_VAL	0x00ff	/* Tx AGC step value, 1/2 dBm */
+#define E_TX_AGC_STEP_VAL_S	0
+
 #endif	/* !_MT7610_H_ */
