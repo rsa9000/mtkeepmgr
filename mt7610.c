@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "medump.h"
 #include "utils.h"
@@ -177,30 +178,19 @@ static void mt7610_dump_rate_power(void)
 static void mt7610_read_tssi_tcomp_tbl(unsigned off, int8_t *tbl)
 {
 	uint16_t val;
-	int i, j = 0;
+	int i;
 
-	/* Read minus (below reference) part */
+	/* Read data from eeprom */
 	for (i = 0; i < E_TSSI_TCOMP_N / 2; ++i) {
-		if (i % 2 == 0) {
-			val = eep_read_word(off + 2 * j++);
-			tbl[i] = (val >> 0) & 0xff;
-		} else {
-			tbl[i] = (val >> 8) & 0xff;
-		}
+		val = eep_read_word(off + 2 * i);
+		tbl[2 * i + 0] = (val >> 8) & 0xff;
+		tbl[2 * i + 1] = (val >> 0) & 0xff;
 	}
 
-	/* Zero neutral element */
+	/* Place neutral element in the middle of the table */
+	memmove(&tbl[E_TSSI_TCOMP_N / 2 + 1], &tbl[E_TSSI_TCOMP_N / 2],
+		E_TSSI_TCOMP_N / 2);
 	tbl[E_TSSI_TCOMP_N / 2] = 0;
-
-	/* Read plus (above reference) part */
-	for (i = E_TSSI_TCOMP_N / 2 + 1; i < E_TSSI_TCOMP_N + 1; ++i) {
-		if (i % 2 == 0) {
-			tbl[i] = (val >> 8) & 0xff;
-		} else {
-			val = eep_read_word(off + 2 * j++);
-			tbl[i] = (val >> 0) & 0xff;
-		}
-	}
 }
 
 static void mt7610_adj_tssi_tcomp_tbl(int8_t *tbl)
