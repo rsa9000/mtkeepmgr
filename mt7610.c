@@ -14,26 +14,25 @@
 /* Preserved values for further calculations */
 static int8_t temp_offset;		/* Temperature offset */
 
-/* Return power delta in 0.5 dBm step */
-static int pwr_delta_unpack(const uint8_t val)
-{
-	if (!(val & E_PWR_DELTA_EN))
-		return 0;
-
-	return val & E_PWR_DELTA_SIGN ? FIELD_GET(E_PWR_DELTA_VAL, val):
-					-1 * FIELD_GET(E_PWR_DELTA_VAL, val);
-}
-
+/* Return decoded power delta */
 static const char *pwr_delta_str(const uint8_t val)
 {
-	static char buf[0x10];
+	static char buf[0x20];
+	char str[0x10];
 	int delta;
 
-	if (0xff == val)
-		return "0 dBm (default)";
+	if (0xff == val) {
+		snprintf(str, sizeof(str), "0.0 dBm, default");
+	} else if (!(val & E_PWR_DELTA_EN)) {
+		snprintf(str, sizeof(str), "0.0 dBm, disabled");
+	} else {
+		delta = val & E_PWR_DELTA_SIGN ?
+			FIELD_GET(E_PWR_DELTA_VAL, val):
+			-1 * FIELD_GET(E_PWR_DELTA_VAL, val);
+		snprintf(str, sizeof(str), "%+d.%d dBm", delta / 2, (delta & 1) * 5);
+	}
 
-	delta = pwr_delta_unpack(val);
-	snprintf(buf, sizeof(buf), "%.1f dBm", (double)delta / 2);
+	snprintf(buf, sizeof(buf), "0x%02x (%s)", val, str);
 
 	return buf;
 }
