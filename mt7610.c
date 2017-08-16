@@ -316,12 +316,12 @@ static int mt7610_eep_parse(void)
 
 	printf("[Tx power delta]\n");
 	val = eep_read_word(E_40M_PWR_DELTA);
-	printf("  2GHz 40MHz    : %s\n",
-		pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_2G, val)));
-	printf("  5GHz 40MHz    : %s\n",
+	printf("  2GHz 20/40MHz : %s\n",
+	       pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_2G, val)));
+	printf("  5GHz 20/40MHz : %s\n",
 	       pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_5G, val)));
 	val = eep_read_word(E_80M_PWR_DELTA);
-	printf("  5GHz 80MHz    : %s\n",
+	printf("  5GHz 20/80MHz : %s\n",
 	       pwr_delta_str(FIELD_GET(E_80M_PWR_DELTA_5G, val)));
 	printf("\n");
 
