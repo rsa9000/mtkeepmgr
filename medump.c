@@ -95,7 +95,7 @@ static int parse_file(const char *filename)
 	printf("[EEPROM identification]\n");
 
 	chipid = eep_read_word(E_CHIPID);
-	printf("  ChipID        : 0x%04x\n", chipid);
+	printf("  ChipID        : %04Xh\n", chipid);
 	version = eep_read_word(E_VERSION);
 	printf("  Version       : %u.%u\n",
 	       FIELD_GET(E_VERSION_VERSION, version),

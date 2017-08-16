@@ -32,7 +32,7 @@ static const char *pwr_delta_str(const uint8_t val)
 		snprintf(str, sizeof(str), "%+d.%d dBm", delta / 2, (delta & 1) * 5);
 	}
 
-	snprintf(buf, sizeof(buf), "0x%02x (%s)", val, str);
+	snprintf(buf, sizeof(buf), "%02Xh (%s)", val, str);
 
 	return buf;
 }
@@ -235,15 +235,15 @@ static int mt7610_eep_parse(void)
 
 	printf("[Device identification]\n");
 	printf("  MacAddr       : %s\n", get_macaddr_str());
-	printf("  PCIDevID      : 0x%04x\n", eep_read_word(E_PCI_DEV_ID));
-	printf("  PCIVenID      : 0x%04x\n", eep_read_word(E_PCI_VEN_ID));
-	printf("  PCISubsysDevID: 0x%04x\n", eep_read_word(E_PCI_SUB_DEV_ID));
-	printf("  PCISubsysVenID: 0x%04x\n", eep_read_word(E_PCI_SUB_VEN_ID));
+	printf("  PCIDevID      : %04Xh\n", eep_read_word(E_PCI_DEV_ID));
+	printf("  PCIVenID      : %04Xh\n", eep_read_word(E_PCI_VEN_ID));
+	printf("  PCISubsysDevID: %04Xh\n", eep_read_word(E_PCI_SUB_DEV_ID));
+	printf("  PCISubsysVenID: %04Xh\n", eep_read_word(E_PCI_SUB_VEN_ID));
 	printf("\n");
 
 	printf("[Device configuration]\n");
-	printf("  CMB aux option: 0x%04x\n", eep_read_word(E_CMB_AUX_OPT));
-	printf("  XTAL opt???   : 0x%04x\n", eep_read_word(E_XTAL_OPT));
+	printf("  CMB aux option: %04Xh\n", eep_read_word(E_CMB_AUX_OPT));
+	printf("  XTAL opt???   : %04Xh\n", eep_read_word(E_XTAL_OPT));
 	val = eep_read_word(E_NIC_CFG0);
 	printf("  RxPath        : %u\n", FIELD_GET(E_NIC_CFG0_RX_PATH, val));
 	printf("  TxPath        : %u\n", FIELD_GET(E_NIC_CFG0_TX_PATH, val));
@@ -273,7 +273,7 @@ static int mt7610_eep_parse(void)
 	printf("  XtalOpt       : %u\n", FIELD_GET(E_NIC_CFG2_XTAL_OPT, val));
 	printf("  RxTempCompens.: %s\n", val & E_NIC_CFG2_RXTEMP_C_DIS ? "Disable" : "Enable");
 	val = eep_read_word(E_FREQ_OFFSET);
-	printf("  FreqOffset    : 0x%02x\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
+	printf("  FreqOffset    : %02Xh\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
 	val = eep_read_word(E_TEMP_OFFSET);
 	temp_offset = (int8_t)FIELD_GET(E_TEMP_OFFSET_VAL, val);
 	printf("  TempOffset    : %d\n", temp_offset);
