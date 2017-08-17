@@ -195,7 +195,7 @@ static void mt7610_dump_rate_power(void)
 			"HT/VHT MCS 4/5", "HT/VHT MCS 6/7",
 			{E_RATE_PWR_2G_MCS_4_6, E_RATE_PWR_5G_MCS_4_6, E_RATE_PWR_STBC_MCS_4_6}
 		}, {
-			"VHT MCS8", "VHT MCS9",
+			"VHT MCS 8/9", NULL,
 			{0, E_RATE_PWR_5G_VHT_8_9, 0}
 		}, {
 			NULL, NULL
