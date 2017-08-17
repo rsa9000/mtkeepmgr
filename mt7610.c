@@ -14,6 +14,23 @@
 /* Preserved values for further calculations */
 static int8_t temp_offset;		/* Temperature offset */
 
+static const char *pwr_chan_str(const uint8_t val)
+{
+	static char buf[0x10];
+	unsigned __val;
+
+	if (E_CH_PWR_MIN <= val && val <= E_CH_PWR_MAX)
+		__val = val;
+	else
+		__val = E_CH_PWR_DEFAULT;
+
+	/* Value is in 0.5 dBm and non-negative */
+	snprintf(buf, sizeof(buf), "%d.%d", __val / 2, (__val & 1) * 5);
+
+	return buf;
+
+}
+
 /* Return decoded power delta */
 static const char *pwr_delta_str(const uint8_t val)
 {
@@ -107,12 +124,15 @@ static void mt7610_dump_channel_power(void)
 		}
 		printf("  Channel: ");
 		for (ci = 0; ci < sb->nchan; ++ci)
-			printf(" %3u", sb->ch[ci]);
+			printf(" %4u", sb->ch[ci]);
 		printf("\n");
-		printf("  Power  : ");
+		printf("  Raw    : ");
 		for (ci = 0; ci < sb->nchan; ++ci)
-			printf(" %3u", pwr[ci] > E_CH_PWR_MAX ?
-				       E_CH_PWR_DEFAULT : pwr[ci]);
+			printf("  %02Xh", pwr[ci]);
+		printf("\n");
+		printf("  Pwr,dBm: ");
+		for (ci = 0; ci < sb->nchan; ++ci)
+			printf(" %4s", pwr_chan_str(pwr[ci]));
 		printf("\n");
 	}
 }

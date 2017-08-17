@@ -122,6 +122,8 @@
 #define E_CH_PWR_HI		0xff00	/* Hight part of word */
 #define E_CH_PWR_HI_S		8
 
+/* Oposite not known documentation, driver treats zero as valid value */
+#define E_CH_PWR_MIN		0x01	/* Minimal valid value */
 #define E_CH_PWR_MAX		0x3f	/* Maximum valid value */
 #define E_CH_PWR_DEFAULT	5	/* Def. value if EEP is out of range */
 
