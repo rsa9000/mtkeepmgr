@@ -204,9 +204,16 @@ static void mt7610_dump_rate_power(void)
 	uint16_t val[3];
 	unsigned i;
 
-	printf("                   ");
+	printf("                  ");
+	printf(".---------- Raw --------.");
+	printf(".--------- Power, dBm --------.");
+	printf("\n");
+	printf("                  |");
 	for (i = 0; i < 3; ++i)
-		printf("%10s", blocks[i]);
+		printf("%7s|", blocks[i]);
+	printf("|");
+	for (i = 0; i < 3; ++i)
+		printf("%9s|", blocks[i]);
 	printf("\n");
 
 	for (r = rates; r->title_lo || r->title_hi; ++r) {
@@ -215,14 +222,28 @@ static void mt7610_dump_rate_power(void)
 				val[i] = eep_read_word(r->off[i]);
 		if (r->title_lo) {
 			printf("  %-16s:", r->title_lo);
+			for (i = 0; i < 3; ++i) {
+				if (r->off[i])
+					printf("    %02Xh ", FIELD_GET(E_RATE_PWR_LO, val[i]));
+				else
+					printf("        ");
+			}
+			printf(" ");
 			for (i = 0; i < 3; ++i)
-				printf("%10s", r->off[i] ? pwr_rate_str(FIELD_GET(E_RATE_PWR_LO, val[i])) : "");
+				printf("%9s ", r->off[i] ? pwr_rate_str(FIELD_GET(E_RATE_PWR_LO, val[i])) : "");
 			printf("\n");
 		}
 		if (r->title_hi) {
 			printf("  %-16s:", r->title_hi);
+			for (i = 0; i < 3; ++i) {
+				if (r->off[i])
+					printf("    %02Xh ", FIELD_GET(E_RATE_PWR_HI, val[i]));
+				else
+					printf("        ");
+			}
+			printf(" ");
 			for (i = 0; i < 3; ++i)
-				printf("%10s", r->off[i] ? pwr_rate_str(FIELD_GET(E_RATE_PWR_HI, val[i])) : "");
+				printf("%9s ", r->off[i] ? pwr_rate_str(FIELD_GET(E_RATE_PWR_HI, val[i])) : "");
 			printf("\n");
 		}
 	}
