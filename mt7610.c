@@ -364,8 +364,8 @@ static int mt7610_eep_parse(void)
 	printf("  RxTempCompens.: %s\n", val & E_NIC_CFG2_RXTEMP_C_DIS ? "Disable" : "Enable");
 	val = eep_read_word(E_FREQ_OFFSET);
 	printf("  FreqOffset    : %02Xh\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
-	val = eep_read_word(E_TEMP_OFFSET);
-	temp_offset = (int8_t)FIELD_GET(E_TEMP_OFFSET_VAL, val);
+	val = eep_read_word(E_TEMP_2G_TGT_PWR);
+	temp_offset = (int8_t)FIELD_GET(E_TEMP_VAL, val);
 	printf("  TempOffset    : %d\n", temp_offset);
 	val = eep_read_word(E_5G_SUBBANDS);
 	printf("  5GHz mid chan : %u\n", FIELD_GET(E_5G_SUBBANDS_MID_CH, val));
@@ -406,6 +406,9 @@ static int mt7610_eep_parse(void)
 	printf("\n");
 
 	printf("[Tx power target]\n");
+	val = eep_read_word(E_TEMP_2G_TGT_PWR);
+	printf("  2GHz (20MHz)  : %s\n",
+	       pwr_target_str(FIELD_GET(E_PWR_2G_TARGET, val)));
 	val = eep_read_word(E_PWR_5G_80M_TGT);
 	printf("  5GHz (20MHz)  : %s\n",
 	       pwr_target_str(FIELD_GET(E_PWR_5G_TARGET, val)));

@@ -153,9 +153,16 @@
  */
 #define E_CH_PWR_5G_2_BASE	0x0094
 
-#define E_TEMP_OFFSET		0x00d0
-#define E_TEMP_OFFSET_VAL	0xff00	/* Reference temperature (signed) */
-#define E_TEMP_OFFSET_VAL_S	8
+/**
+ * Despite that the IC is support 2.4GHz band, there are no known device
+ * on the market, what operates in 2.4GHz band. So this location can be
+ * called just as 'E_TEMP_CALIB' or 'E_TEMP_OFFSET'.
+ */
+#define E_TEMP_2G_TGT_PWR	0x00d0
+#define E_PWR_2G_TARGET		0x00ff	/* 2G band Target power, 0.5 dBm */
+#define E_PWR_2G_TARGET_S	0
+#define E_TEMP_VAL		0xff00	/* Reference temperature (signed) */
+#define E_TEMP_VAL_S		8
 
 #define E_PWR_5G_80M_TGT	0x00d2	/* 20/80 Tx Power Delta, 5G target pwr */
 #define E_PWR_5G_TARGET		0x00ff	/* 5G band Target power, 0.5 dBm */
