@@ -87,6 +87,24 @@ static const char *country_str(const uint8_t val)
 	return buf;
 }
 
+static const char *lna_gain_str(const uint8_t val)
+{
+	static char buf[0x10];
+
+	snprintf(buf, sizeof(buf), "%02Xh (%u dB)", val, val);
+
+	return buf;
+}
+
+static const char *rssi_offset_str(const uint8_t val)
+{
+	static char buf[0x10];
+
+	snprintf(buf, sizeof(buf), "%02Xh (%d dB)", val, (int8_t)val);
+
+	return buf;
+}
+
 static void mt7610_dump_channel_power(void)
 {
 	static const unsigned ch_2gh[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -326,21 +344,29 @@ static int mt7610_eep_parse(void)
 
 	printf("[External LNA gain]\n");
 	val = eep_read_word(E_LNA_GAIN_0);
-	printf("  2GHz (1-14)   : %u dB\n", FIELD_GET(E_LNA_GAIN_2G, val));
-	printf("  5GHz (36-46)  : %u dB\n", FIELD_GET(E_LNA_GAIN_5G_0, val));
+	printf("  2GHz (1-14)   : %s\n",
+	       lna_gain_str(FIELD_GET(E_LNA_GAIN_2G, val)));
+	printf("  5GHz (36-64)  : %s\n",
+	       lna_gain_str(FIELD_GET(E_LNA_GAIN_5G_0, val)));
 	val = eep_read_word(E_LNA_GAIN_1);
-	printf("  5GHz (100-128): %u dB\n", FIELD_GET(E_LNA_GAIN_5G_1, val));
+	printf("  5GHz (100-128): %s\n",
+	       lna_gain_str(FIELD_GET(E_LNA_GAIN_5G_1, val)));
 	val = eep_read_word(E_LNA_GAIN_2);
-	printf("  5GHz (132-165): %u dB\n", FIELD_GET(E_LNA_GAIN_5G_2, val));
+	printf("  5GHz (132-165): %s\n",
+	       lna_gain_str(FIELD_GET(E_LNA_GAIN_5G_2, val)));
 	printf("\n");
 
 	printf("[BBP RSSI offsets]\n");
 	val = eep_read_word(E_RSSI_OFFSET_2G);
-	printf("  2GHz Offset0  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_2G_0, val));
-	printf("  2GHz Offset1  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_2G_1, val));
+	printf("  2GHz Offset0  : %s\n",
+	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_2G_0, val)));
+	printf("  2GHz Offset1  : %s\n",
+	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_2G_1, val)));
 	val = eep_read_word(E_RSSI_OFFSET_5G);
-	printf("  5GHz Offset0  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_5G_0, val));
-	printf("  5GHz Offset1  : %d dB\n", (int8_t)FIELD_GET(E_RSSI_OFFSET_5G_1, val));
+	printf("  5GHz Offset0  : %s\n",
+	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_5G_0, val)));
+	printf("  5GHz Offset1  : %s\n",
+	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_5G_1, val)));
 	printf("\n");
 
 	printf("[Tx power delta]\n");
