@@ -71,6 +71,22 @@ static const char *pwr_rate_str(const uint8_t val)
 	return buf;
 }
 
+static const char *country_str(const uint8_t val)
+{
+	static char buf[0x10];
+
+	if (val == E_COUNTRY_NONE)
+		snprintf(buf, sizeof(buf), "%02Xh (<none>)", val);
+	else if (val < E_COUNTRY_CUSTOM)
+		snprintf(buf, sizeof(buf), "%02Xh (#%u)", val, val);
+	else if (val == E_COUNTRY_CUSTOM)
+		snprintf(buf, sizeof(buf), "%02Xh (<custom>)", val);
+	else
+		snprintf(buf, sizeof(buf), "%02Xh (<invalid>)", val);
+
+	return buf;
+}
+
 static void mt7610_dump_channel_power(void)
 {
 	static const unsigned ch_2gh[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -304,14 +320,8 @@ static int mt7610_eep_parse(void)
 
 	printf("[Country region code]\n");
 	val = eep_read_word(E_COUNTRY_REGION);
-	if (FIELD_GET(E_COUNTRY_REGION_5G, val) == 0xff)
-		printf("  5GHz country  : <none>\n");
-	else
-		printf("  5GHz country  : %u\n", FIELD_GET(E_COUNTRY_REGION_5G, val));
-	if (FIELD_GET(E_COUNTRY_REGION_2G, val) == 0xff)
-		printf("  2GHz country  : <none>\n");
-	else
-		printf("  2GHz country  : %u\n", FIELD_GET(E_COUNTRY_REGION_2G, val));
+	printf("  2GHz country  : %s\n", country_str(FIELD_GET(E_COUNTRY_REGION_2G, val)));
+	printf("  5GHz country  : %s\n", country_str(FIELD_GET(E_COUNTRY_REGION_5G, val)));
 	printf("\n");
 
 	printf("[External LNA gain]\n");

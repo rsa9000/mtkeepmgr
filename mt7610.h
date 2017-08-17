@@ -48,6 +48,8 @@
 #define E_COUNTRY_REGION_5G_S	0
 #define E_COUNTRY_REGION_2G	0xff00
 #define E_COUNTRY_REGION_2G_S	8
+#define E_COUNTRY_NONE		0xff
+#define E_COUNTRY_CUSTOM	0x1E
 
 #define E_FREQ_OFFSET		0x003a
 #define E_FREQ_OFFSET_FO	0x00ff	/* Frequency offset */
