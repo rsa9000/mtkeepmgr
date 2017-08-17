@@ -157,9 +157,11 @@
 #define E_TEMP_OFFSET_VAL	0xff00	/* Reference temperature (signed) */
 #define E_TEMP_OFFSET_VAL_S	8
 
-#define E_80M_PWR_DELTA		0x00d2	/* 20/80 Tx Power Delta */
-#define E_80M_PWR_DELTA_5G	0xff00	/* See E_PWR_DELTA_xxx */
-#define E_80M_PWR_DELTA_5G_S	8
+#define E_PWR_5G_80M_TGT	0x00d2	/* 20/80 Tx Power Delta, 5G target pwr */
+#define E_PWR_5G_TARGET		0x00ff	/* 5G band Target power, 0.5 dBm */
+#define E_PWR_5G_TARGET_S	0
+#define E_PWR_5G_80M_DELTA	0xff00	/* See E_PWR_DELTA_xxx */
+#define E_PWR_5G_80M_DELTA_S	8
 
 #define E_5G_SUBBANDS		0x00dc	/* Subbands bounds */
 #define E_5G_SUBBANDS_MID_CH	0x00ff	/* Middle channel value */

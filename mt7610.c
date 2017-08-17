@@ -31,6 +31,21 @@ static const char *pwr_chan_str(const uint8_t val)
 
 }
 
+static const char *pwr_target_str(const uint8_t val)
+{
+	static char buf[0x20];
+	char str[0x12];
+
+	if (0x00 == val || 0xff == val)
+		snprintf(str, sizeof(str), "16.0 dBm, default");
+	else
+		snprintf(str, sizeof(str), "%d.%d dBm", val / 2, (val & 1) * 5);
+
+	snprintf(buf, sizeof(buf), "%02Xh (%s)", val, str);
+
+	return buf;
+}
+
 /* Return decoded power delta */
 static const char *pwr_delta_str(const uint8_t val)
 {
@@ -390,15 +405,21 @@ static int mt7610_eep_parse(void)
 	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_5G_1, val)));
 	printf("\n");
 
+	printf("[Tx power target]\n");
+	val = eep_read_word(E_PWR_5G_80M_TGT);
+	printf("  5GHz (20MHz)  : %s\n",
+	       pwr_target_str(FIELD_GET(E_PWR_5G_TARGET, val)));
+	printf("\n");
+
 	printf("[Tx power delta]\n");
 	val = eep_read_word(E_40M_PWR_DELTA);
 	printf("  2GHz 20/40MHz : %s\n",
 	       pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_2G, val)));
 	printf("  5GHz 20/40MHz : %s\n",
 	       pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_5G, val)));
-	val = eep_read_word(E_80M_PWR_DELTA);
+	val = eep_read_word(E_PWR_5G_80M_TGT);
 	printf("  5GHz 20/80MHz : %s\n",
-	       pwr_delta_str(FIELD_GET(E_80M_PWR_DELTA_5G, val)));
+	       pwr_delta_str(FIELD_GET(E_PWR_5G_80M_DELTA, val)));
 	printf("\n");
 
 	printf("[Per channel power table]\n");
