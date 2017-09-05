@@ -177,11 +177,11 @@
 #define E_PWR_5G_80M_DELTA	0xff00	/* See E_PWR_DELTA_xxx */
 #define E_PWR_5G_80M_DELTA_S	8
 
-#define E_5G_SUBBANDS		0x00dc	/* Subbands bounds */
-#define E_5G_SUBBANDS_MID_CH	0x00ff	/* Middle channel value */
-#define E_5G_SUBBANDS_MID_CH_S	0
-#define E_5G_SUBBANDS_HIG_CH	0xff00	/* High channel value */
-#define E_5G_SUBBANDS_HIG_CH_S	8
+#define E_LNA_5G_SUBBANDS	0x00dc	/* 5GHz LNA subbands bounds */
+#define E_LNA_5G_SUBBANDS_MID_CH	0x00ff	/* Middle channel value */
+#define E_LNA_5G_SUBBANDS_MID_CH_S	0
+#define E_LNA_5G_SUBBANDS_HIG_CH	0xff00	/* High channel value */
+#define E_LNA_5G_SUBBANDS_HIG_CH_S	8
 
 /**
  * Per rate power table consists of several parts:

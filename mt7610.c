@@ -111,6 +111,17 @@ static const char *lna_gain_str(const uint8_t val)
 	return buf;
 }
 
+static const char *boundary_ch_str(const uint8_t val, const uint8_t def)
+{
+	static char buf[0x20];
+	uint8_t ch = val == 0xff ? def : val;
+
+	snprintf(buf, sizeof(buf), "%02Xh (%u%s)", val, ch,
+		 val == 0xff ? ", default" : "");
+
+	return buf;
+}
+
 static const char *rssi_offset_str(const uint8_t val)
 {
 	static char buf[0x10];
@@ -382,9 +393,6 @@ static int mt7610_eep_parse(void)
 	val = eep_read_word(E_TEMP_2G_TGT_PWR);
 	temp_offset = (int8_t)FIELD_GET(E_TEMP_VAL, val);
 	printf("  TempOffset    : %d\n", temp_offset);
-	val = eep_read_word(E_5G_SUBBANDS);
-	printf("  5GHz mid chan : %u\n", FIELD_GET(E_5G_SUBBANDS_MID_CH, val));
-	printf("  5GHz higt chan: %u\n", FIELD_GET(E_5G_SUBBANDS_HIG_CH, val));
 	printf("\n");
 
 	printf("[Country region code]\n");
@@ -405,6 +413,11 @@ static int mt7610_eep_parse(void)
 	val = eep_read_word(E_LNA_GAIN_2);
 	printf("  5GHz (132-165): %s\n",
 	       lna_gain_str(FIELD_GET(E_LNA_GAIN_5G_2, val)));
+	val = eep_read_word(E_LNA_5G_SUBBANDS);
+	printf("  5GHz mid chan : %s\n",
+	       boundary_ch_str(FIELD_GET(E_LNA_5G_SUBBANDS_MID_CH, val), 100));
+	printf("  5GHz higt chan: %s\n",
+	       boundary_ch_str(FIELD_GET(E_LNA_5G_SUBBANDS_HIG_CH, val), 155));
 	printf("\n");
 
 	printf("[BBP RSSI offsets]\n");
