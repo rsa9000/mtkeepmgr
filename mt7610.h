@@ -24,11 +24,11 @@
 #define E_NIC_CFG0_TX_PATH_S	4
 #define E_NIC_CFG0_INT_2G_PA	BIT(8)
 #define E_NIC_CFG0_INT_5G_PA	BIT(9)
-#define E_NIC_CFG0_EXT_PA_CURR	BIT(10)
+#define E_NIC_CFG0_EXT_PA_CURR	BIT(10)	/* 0: 16 ma, 1: 8 ma (default) */
 
 #define E_NIC_CFG1		0x0036
 #define E_NIC_CFG1_HW_RF_CTRL	BIT(0)	/* Hardware radio control */
-#define E_NIC_CFG1_DYN_TX_AGC	BIT(1)	/* Dynamic Tx AGC */
+#define E_NIC_CFG1_EXT_TX_ALC	BIT(1)	/* External Tx ALC */
 #define E_NIC_CFG1_EXT_2G_LNA	BIT(2)
 #define E_NIC_CFG1_EXT_5G_LNA	BIT(3)
 #define E_NIC_CFG1_CB_ACCEL_DIS	BIT(4)	/* Dis. cardbus acceleration */
@@ -37,11 +37,18 @@
 #define E_NIC_CFG1_WPS_BUT_EN	BIT(7)	/* Enable WPS button */
 #define E_NIC_CFG1_40M_2G_DIS	BIT(8)	/* Dis. 40MHz in 2.4 GHz */
 #define E_NIC_CFG1_40M_5G_DIS	BIT(9)	/* Dis. 40MHz in 5 GHz */
-#define E_NIC_CFG1_ANT_DIV	BIT(11)	/* Antenna diversity */
-#define E_NIC_CFG1_ANT_OPT	BIT(12)
+/* Bit 10 is reserved */
+#define E_NIC_CFG1_ANT_DIV	0x1800	/* Antenna diversity (see E_ANT_DIV_xx) */
+#define E_NIC_CFG1_ANT_DIV_S	11
 #define E_NIC_CFG1_INT_TX_ALC	BIT(13)	/* Internal Tx ALC */
 #define E_NIC_CFG1_COEX		BIT(14)
 #define E_NIC_CFG1_DAC_TEST	BIT(15)
+
+/* Antenna diversity types */
+#define E_ANT_DIV_DIS		0	/* Disable ant. diversity */
+#define E_ANT_DIV_EN		1	/* Enable ant. diversity */
+#define E_ANT_DIV_FIX_MAIN	2	/* Use fixed main antenna */
+#define E_ANT_DIV_FIX_AUX	3	/* Use fixed aux antenna */
 
 #define E_COUNTRY_REGION	0x0038
 #define E_COUNTRY_REGION_5G	0x00ff
@@ -61,10 +68,10 @@
 #define E_NIC_CFG2_TX_STREAM	0x00f0
 #define E_NIC_CFG2_TX_STREAM_S	4
 #define E_NIC_CFG2_COEX_ANT	BIT(8)
-#define E_NIC_CFG2_CAL_IN_FLASH	BIT(12)
 #define E_NIC_CFG2_XTAL_OPT	0x0600
 #define E_NIC_CFG2_XTAL_OPT_S	9
 #define E_NIC_CFG2_RXTEMP_C_DIS	BIT(11)	/* Rx temp compensation dis. */
+#define E_NIC_CFG2_CAL_IN_FLASH	BIT(12)
 
 #define E_LNA_GAIN_0		0x0044
 #define E_LNA_GAIN_2G		0x00ff	/* dB */

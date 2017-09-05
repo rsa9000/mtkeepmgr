@@ -321,6 +321,12 @@ static const char *mt7610_dump_tssi_tcomp(unsigned off)
 
 static int mt7610_eep_parse(void)
 {
+	static const char *ant_div_str[] = {
+		[E_ANT_DIV_DIS] = "No diversity",
+		[E_ANT_DIV_EN] = "Diversity",
+		[E_ANT_DIV_FIX_MAIN] = "Fixed main antenna",
+		[E_ANT_DIV_FIX_AUX] = "Fixed aux antenna"
+	};
 	uint16_t val;
 
 	printf("[Device identification]\n");
@@ -346,8 +352,8 @@ static int mt7610_eep_parse(void)
 	printf("    PA current  : %u ma\n", val & E_NIC_CFG0_EXT_PA_CURR ? 8 : 16);
 	val = eep_read_word(E_NIC_CFG1);
 	printf("  Cfg1          : %04Xh\n", val);
-	printf("    RF Ctrl     : %s\n", val & E_NIC_CFG1_HW_RF_CTRL ? "Hw" : "Driver");
-	printf("    DynTxAgcCtrl: %s\n", val & E_NIC_CFG1_DYN_TX_AGC ? "Enable" : "Disable");
+	printf("    RF Ctrl     : %s\n", val & E_NIC_CFG1_HW_RF_CTRL ? "Hardware" : "Driver");
+	printf("    Ext. TxALC  : %s\n", val & E_NIC_CFG1_EXT_TX_ALC ? "Enable" : "Disable");
 	printf("    LNA 2GHz    : %s\n", val & E_NIC_CFG1_EXT_2G_LNA ? "External" : "Internal");
 	printf("    LNA 5GHz    : %s\n", val & E_NIC_CFG1_EXT_5G_LNA ? "External" : "Internal");
 	printf("    CardBus Acc.: %s\n", val & E_NIC_CFG1_CB_ACCEL_DIS ? "Disable" : "Enable");
@@ -356,18 +362,18 @@ static int mt7610_eep_parse(void)
 	printf("    WPS button  : %s\n", val & E_NIC_CFG1_WPS_BUT_EN ? "Enable" : "Disable");
 	printf("    40MHz 2GHz  : %s\n", val & E_NIC_CFG1_40M_2G_DIS ? "Disable" : "Enable");
 	printf("    40MHz 5GHz  : %s\n", val & E_NIC_CFG1_40M_5G_DIS ? "Disable" : "Enable");
-	printf("    Ant. diver. : %s\n", val & E_NIC_CFG1_ANT_DIV ? "True" : "False");
-	printf("    Ant. opt.   : %s\n", val & E_NIC_CFG1_ANT_OPT ? "True" : "False");
+	printf("    Ant. divers.: %s\n", ant_div_str[FIELD_GET(E_NIC_CFG1_ANT_DIV, val)]);
 	printf("    Int. TxALC  : %s\n", val & E_NIC_CFG1_INT_TX_ALC ? "True" : "False");
 	printf("    Coexistance : %s\n", val & E_NIC_CFG1_COEX ? "True" : "False");
+	printf("    DAC test    : %s\n", val & E_NIC_CFG1_DAC_TEST ? "True" : "False");
 	val = eep_read_word(E_NIC_CFG2);
 	printf("  Cfg2          : %04Xh\n", val);
 	printf("    RxStream    : %u\n", FIELD_GET(E_NIC_CFG2_RX_STREAM, val));
 	printf("    TxStream    : %u\n", FIELD_GET(E_NIC_CFG2_TX_STREAM, val));
 	printf("    CoexAnt     : %s\n", val & E_NIC_CFG2_COEX_ANT ? "True" : "False");
-	printf("    CalibInFlash: %s\n", val & E_NIC_CFG2_CAL_IN_FLASH ? "True" : "False");
 	printf("    XtalOpt     : %u\n", FIELD_GET(E_NIC_CFG2_XTAL_OPT, val));
 	printf("    RxTempComp. : %s\n", val & E_NIC_CFG2_RXTEMP_C_DIS ? "Disable" : "Enable");
+	printf("    CalibInFlash: %s\n", val & E_NIC_CFG2_CAL_IN_FLASH ? "True" : "False");
 	printf("\n");
 
 	printf("[Misc params]\n");
