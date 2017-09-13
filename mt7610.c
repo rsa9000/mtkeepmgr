@@ -25,7 +25,7 @@ static const char *pwr_chan_str(const uint8_t val)
 		__val = E_CH_PWR_DEFAULT;
 
 	/* Value is in 0.5 dBm and non-negative */
-	snprintf(buf, sizeof(buf), "%d.%d", __val / 2, (__val & 1) * 5);
+	snprintf(buf, sizeof(buf), "%.1f", (double)__val / 2);
 
 	return buf;
 
@@ -39,7 +39,7 @@ static const char *pwr_target_str(const uint8_t val)
 	if (0x00 == val || 0xff == val)
 		snprintf(str, sizeof(str), "16.0 dBm, default");
 	else
-		snprintf(str, sizeof(str), "%d.%d dBm", val / 2, (val & 1) * 5);
+		snprintf(str, sizeof(str), "%.1f dBm", (double)val / 2);
 
 	snprintf(buf, sizeof(buf), "%02Xh (%s)", val, str);
 
@@ -61,7 +61,7 @@ static const char *pwr_delta_str(const uint8_t val)
 		delta = val & E_PWR_DELTA_SIGN ?
 			FIELD_GET(E_PWR_DELTA_VAL, val):
 			-1 * FIELD_GET(E_PWR_DELTA_VAL, val);
-		snprintf(str, sizeof(str), "%+d.%d dBm", delta / 2, (delta & 1) * 5);
+		snprintf(str, sizeof(str), "%+.1f dBm", (double)delta / 2);
 	}
 
 	snprintf(buf, sizeof(buf), "%02Xh (%s)", val, str);
@@ -466,9 +466,8 @@ static int mt7610_eep_parse(void)
 	if (FIELD_GET(E_TX_AGC_STEP_VAL, val) == 0xff)
 		printf("  Tx AGC step   : 1.0 dBm (default)\n");
 	else
-		printf("  Tx AGC step   : %u.%u dBm\n",
-		       FIELD_GET(E_TX_AGC_STEP_VAL, val) / 2,
-		       FIELD_GET(E_TX_AGC_STEP_VAL, val) & 1 ? 5 : 0);
+		printf("  Tx AGC step   : %.1f dBm\n",
+		       (double)FIELD_GET(E_TX_AGC_STEP_VAL, val) / 2);
 	val = eep_read_word(E_TSSI_TCOMP_5G_BOUND);
 	printf("  5GHz boundary : %u (channel)\n", FIELD_GET(E_TSSI_TCOMP_5G_BOUND_VAL, val));
 	printf("  5GHz group 1  : {%s}\n",
