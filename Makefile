@@ -2,6 +2,7 @@ TARGET=medump
 
 OBJ=	medump.o	\
 	mt7610.o	\
+	mt7620.o	\
 	utils.o
 
 CFLAGS += -Wall -g
