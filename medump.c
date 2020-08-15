@@ -71,7 +71,7 @@ static int parse_file(const char *filename)
 	}
 
 	if (stat.st_size > sizeof(eep_buf)) {
-		fprintf(stderr, "Input file too big (%lu bytes), expect not more than %u bytes, file will be readed partially\n",
+		fprintf(stderr, "Input file too big (%lu bytes), expect not more than %zu bytes, file will be readed partially\n",
 			stat.st_size, sizeof(eep_buf));
 		eep_len = sizeof(eep_buf);
 	} else if (stat.st_size % 2 != 0) {
