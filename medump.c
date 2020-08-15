@@ -19,14 +19,12 @@
 
 #include "medump.h"
 
-extern struct chip_desc __start___chips;
-extern struct chip_desc __stop___chips;
+extern struct chip_desc *__start___chips[];
+extern struct chip_desc *__stop___chips;
 
-#define for_each_chip(__chip)						\
-	for (__chip = &__start___chips; __chip < &__stop___chips;	\
-		     __chip = (struct chip_desc *)((char *)__chip +	\
-						   sizeof(struct chip_desc)))
-#define chip_is_null(__chip)	(__chip == &__stop___chips)
+#define for_each_chip(__chip, __i)					\
+	for (__i = 0; __i < &__stop___chips - __start___chips; ++__i)	\
+		if ((__chip = __start___chips[i]))	/* to skip possible padding */
 
 static uint8_t eep_buf[0x1000];		/* 4k buffer */
 static unsigned eep_len;		/* Actual EERPOM size */
@@ -49,6 +47,7 @@ static int parse_file(const char *filename)
 	struct stat stat;
 	uint16_t chipid, version;
 	struct chip_desc *chip;
+	int i;
 
 	fd = open(filename, O_RDONLY);
 	if (-1 == fd) {
@@ -101,11 +100,11 @@ static int parse_file(const char *filename)
 	       FIELD_GET(E_VERSION_VERSION, version),
 	       FIELD_GET(E_VERSION_REVISION, version));
 
-	for_each_chip(chip)
+	for_each_chip(chip, i)
 		if (chip->chipid == chipid)
 			break;
 
-	if (chip_is_null(chip)) {
+	if (!chip || chip->chipid != chipid) {
 		fprintf(stderr, "EEPROM dump is for unknown or unsupported chip\n");
 		return -1;
 	}

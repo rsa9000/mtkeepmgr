@@ -35,11 +35,13 @@ struct chip_desc {
 };
 
 #define CHIP(__name, __chipid, __parse_func)				\
-	static struct chip_desc __chip_ ## __name			\
-	__attribute__((used)) __attribute__((section("__chips"))) = {	\
+	static struct chip_desc __chip_ ## __name = {			\
 		.name = #__name,					\
 		.chipid = __chipid,					\
 		.parse_func = __parse_func,				\
-	}
+	};								\
+	static struct chip_desc *__chip_ ## __name ## __ptr		\
+	__attribute__((used, section(("__chips")))) = 			\
+	&__chip_ ## __name
 
 #endif	/* !_MEDUMP_H_ */
