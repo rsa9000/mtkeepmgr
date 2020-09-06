@@ -1,6 +1,6 @@
-TARGET=medump
+TARGET=mtkeepmgr
 
-OBJ=	medump.o	\
+OBJ=	mtkeepmgr.o	\
 	mt7610.o	\
 	mt7620.o	\
 	mt7628.o	\

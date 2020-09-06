@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "medump.h"
+#include "mtkeepmgr.h"
 #include "utils.h"
 #include "mt7620.h"
 

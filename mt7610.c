@@ -1,13 +1,13 @@
 /**
  * MediaTek MT7610 EEPROM parser
  *
- * Copyright (c) 2016, Sergey Ryazanov <ryazanov.s.a@gmail.com>
+ * Copyright (c) 2016-2017, Sergey Ryazanov <ryazanov.s.a@gmail.com>
  */
 
 #include <stdio.h>
 #include <string.h>
 
-#include "medump.h"
+#include "mtkeepmgr.h"
 #include "utils.h"
 #include "mt7610.h"
 
@@ -346,6 +346,8 @@ static int mt7610_eep_parse(void)
 	printf("  PCIVenID      : %04Xh\n", eep_read_word(E_PCI_VEN_ID));
 	printf("  PCISubsysDevID: %04Xh\n", eep_read_word(E_PCI_SUB_DEV_ID));
 	printf("  PCISubsysVenID: %04Xh\n", eep_read_word(E_PCI_SUB_VEN_ID));
+	printf("  USB Vendor ID : %04Xh\n", eep_read_word(E_USB_VID));
+	printf("  USB Product ID: %04Xh\n", eep_read_word(E_USB_PID));
 	printf("\n");
 
 	printf("[ASIC data]\n");

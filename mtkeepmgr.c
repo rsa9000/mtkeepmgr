@@ -1,7 +1,7 @@
 /**
- * MediaTek EEPROM dump utility
+ * MediaTek EEPROM management utility
  *
- * Copyright (c) 2016, Sergey Ryazanov <ryazanov.s.a@gmail.com>
+ * Copyright (c) 2016-2020, Sergey Ryazanov <ryazanov.s.a@gmail.com>
  */
 
 #include <stdio.h>
@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "medump.h"
+#include "mtkeepmgr.h"
 
 extern struct chip_desc *__start___chips[];
 extern struct chip_desc *__stop___chips;
@@ -119,8 +119,8 @@ static int parse_file(const char *filename)
 static void usage(const char *name)
 {
 	printf(
-		"MediaTek EEPROM dump utility\n"
-		"Copyright (c) 2016, Sergey Ryazanov <ryazanov.s.a@gmail.com>\n"
+		"MediaTek EEPROM management utility\n"
+		"Copyright (c) 2016-2020, Sergey Ryazanov <ryazanov.s.a@gmail.com>\n"
 		"\n"
 		"Usage:\n"
 		"  %s [-h] <eeprom.bin>\n"

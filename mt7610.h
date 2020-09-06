@@ -1,7 +1,7 @@
 /**
  * MT7610 EEPROM definitions
  *
- * Copyright (c) 2016, Sergey Ryazanov <ryazanov.s.a@gmail.com>
+ * Copyright (c) 2016-2017, Sergey Ryazanov <ryazanov.s.a@gmail.com>
  */
 
 #ifndef _MT7610_H_
@@ -232,5 +232,8 @@
 #define E_TX_AGC_STEP		0x010e	/* Tx AGC step */
 #define E_TX_AGC_STEP_VAL	0x00ff	/* Tx AGC step value, 1/2 dBm */
 #define E_TX_AGC_STEP_VAL_S	0
+
+#define E_USB_VID		0x01c2
+#define E_USB_PID		0x01c4
 
 #endif	/* !_MT7610_H_ */

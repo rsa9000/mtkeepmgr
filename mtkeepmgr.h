@@ -1,11 +1,11 @@
 /**
  * Main header file
  *
- * Copyright (c) 2016, Sergey Ryazanov <ryazanov.s.a@gmail.com>
+ * Copyright (c) 2016-2020, Sergey Ryazanov <ryazanov.s.a@gmail.com>
  */
 
-#ifndef _MEDUMP_H_
-#define _MEDUMP_H_
+#ifndef _MTKEEPMGR_H_
+#define _MTKEEPMGR_H_
 
 #include <stdint.h>
 
@@ -44,4 +44,4 @@ struct chip_desc {
 	__attribute__((used, section(("__chips")))) = 			\
 	&__chip_ ## __name
 
-#endif	/* !_MEDUMP_H_ */
+#endif	/* !_MTKEEPMGR_H_ */
