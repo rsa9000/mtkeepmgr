@@ -50,7 +50,7 @@ static const char *pwr_target_str(const uint8_t val)
 static const char *pwr_delta_str(const uint8_t val)
 {
 	static char buf[0x20];
-	char str[0x20];
+	char str[0x12];
 	int delta;
 
 	if (0xff == val) {
