@@ -152,29 +152,29 @@ static void mt7610_dump_channel_power(void)
 			.name = "2.4 GHz",
 			.ee_base = E_CH_PWR_2G_BASE,
 			.ch = ch_2gh,
-			.nchan = sizeof(ch_2gh)/sizeof(ch_2gh[0]),
+			.nchan = ARRAY_SIZE(ch_2gh),
 		}, {
 			.name = "5 GHz (low)",
 			.ee_base = E_CH_PWR_5G_0_BASE,
 			.ch = ch_5gh_0,
-			.nchan = sizeof(ch_5gh_0)/sizeof(ch_5gh_0[0]),
+			.nchan = ARRAY_SIZE(ch_5gh_0),
 		}, {
 			.name = "5 GHz (middle)",
 			.ee_base = E_CH_PWR_5G_1_BASE,
 			.ch = ch_5gh_1,
-			.nchan = sizeof(ch_5gh_1)/sizeof(ch_5gh_1[0]),
+			.nchan = ARRAY_SIZE(ch_5gh_1),
 		}, {
 			.name = "5 GHz (hight)",
 			.ee_base = E_CH_PWR_5G_2_BASE,
 			.ch = ch_5gh_2,
-			.nchan = sizeof(ch_5gh_2)/sizeof(ch_5gh_2[0]),
+			.nchan = ARRAY_SIZE(ch_5gh_2),
 		}
 	};
 	unsigned pwr[0x10];	/* size = MAX(2G, 5G0, 5G1, 5G2) */
 	unsigned si, ci;
 	uint16_t eeval;
 
-	for (si = 0; si < sizeof(subbands)/sizeof(subbands[0]); ++si) {
+	for (si = 0; si < ARRAY_SIZE(subbands); ++si) {
 		sb = &subbands[si];
 		printf("  Subband: %s\n", sb->name);
 		for (ci = 0; ci < sb->nchan; ci += 2) {
