@@ -7,7 +7,7 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-const char *get_macaddr_str(void);
+const char *get_macaddr_str(struct main_ctx *mc);
 
 #define HEXDUMP_F_ADDR		0x0001
 

@@ -10,20 +10,20 @@
 #include "utils.h"
 #include "mt7620.h"
 
-static int mt7620_eep_parse(void)
+static int mt7620_eep_parse(struct main_ctx *mc)
 {
 	uint16_t val;
 
 	printf("[Device identification]\n");
-	printf("  MacAddr       : %s\n", get_macaddr_str());
+	printf("  MacAddr       : %s\n", get_macaddr_str(mc));
 	printf("\n");
 
 	printf("[NIC configuration]\n");
-	val = eep_read_word(E_NIC_CFG0);
+	val = eep_read_word(mc, E_NIC_CFG0);
 	printf("  Cfg0          : %04Xh\n", val);
 	printf("    RxPath      : %u\n", FIELD_GET(E_NIC_CFG0_RX_PATH, val));
 	printf("    TxPath      : %u\n", FIELD_GET(E_NIC_CFG0_TX_PATH, val));
-	val = eep_read_word(E_NIC_CFG1);
+	val = eep_read_word(mc, E_NIC_CFG1);
 	printf("  Cfg1          : %04Xh\n", val);
 	printf("    Ext. TxALC  : %s\n", val & E_NIC_CFG1_EXT_TX_ALC ? "Enable" : "Disable");
 	printf("    LNA 2GHz    : %s\n", val & E_NIC_CFG1_EXT_2G_LNA ? "External" : "Internal");
@@ -34,7 +34,7 @@ static int mt7620_eep_parse(void)
 	printf("    Int. TxALC  : %s\n", val & E_NIC_CFG1_INT_TX_ALC ? "True" : "False");
 	printf("    Tx0 PA      : %s\n", val & E_NIC_CFG1_TX0_EXT_PA ? "Enternal" : "Internal");
 	printf("    Tx1 PA      : %s\n", val & E_NIC_CFG1_TX1_EXT_PA ? "Enternal" : "Internal");
-	val = eep_read_word(E_NIC_CFG2);
+	val = eep_read_word(mc, E_NIC_CFG2);
 	printf("  Cfg2          : %04Xh\n", val);
 	printf("    RxStream    : %u\n", FIELD_GET(E_NIC_CFG2_RX_STREAM, val));
 	printf("    TxStream    : %u\n", FIELD_GET(E_NIC_CFG2_TX_STREAM, val));

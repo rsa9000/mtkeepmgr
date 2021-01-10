@@ -10,10 +10,10 @@
 #include "utils.h"
 #include "mt7628.h"
 
-static int mt7628_eep_parse(void)
+static int mt7628_eep_parse(struct main_ctx *mc)
 {
 	printf("[Device identification]\n");
-	printf("  MacAddr       : %s\n", get_macaddr_str());
+	printf("  MacAddr       : %s\n", get_macaddr_str(mc));
 	printf("\n");
 
 	return 0;

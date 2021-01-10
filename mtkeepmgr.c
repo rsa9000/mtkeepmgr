@@ -26,22 +26,22 @@ extern struct chip_desc *__stop___chips;
 	for (__i = 0; __i < &__stop___chips - __start___chips; ++__i)	\
 		if ((__chip = __start___chips[i]))	/* to skip possible padding */
 
-static uint8_t eep_buf[0x1000];		/* 4k buffer */
-static unsigned eep_len;		/* Actual EERPOM size */
+/* The main utility execution context */
+static struct main_ctx __mc;
 
-uint16_t eep_read_word(const unsigned offset)
+uint16_t eep_read_word(struct main_ctx *mc, const unsigned offset)
 {
 	uint16_t val;
 
-	if (offset >= eep_len)
+	if (offset >= mc->eep_len)
 		return 0xffff;
 
-	memcpy(&val, &eep_buf[offset], sizeof(val));
+	memcpy(&val, &mc->eep_buf[offset], sizeof(val));
 
 	return le16toh(val);
 }
 
-static int parse_file(const char *filename)
+static int parse_file(struct main_ctx *mc, const char *filename)
 {
 	int fd, ret;
 	struct stat stat;
@@ -69,20 +69,20 @@ static int parse_file(const char *filename)
 		return -1;
 	}
 
-	if (stat.st_size > sizeof(eep_buf)) {
+	if (stat.st_size > sizeof(mc->eep_buf)) {
 		fprintf(stderr, "Input file too big (%lu bytes), expect not more than %zu bytes, file will be readed partially\n",
-			stat.st_size, sizeof(eep_buf));
-		eep_len = sizeof(eep_buf);
+			stat.st_size, sizeof(mc->eep_buf));
+		mc->eep_len = sizeof(mc->eep_buf);
 	} else if (stat.st_size % 2 != 0) {
 		fprintf(stderr, "Input file size is not even (%lu bytes), will read one byte less\n",
 			stat.st_size);
-		eep_len = stat.st_size - 1;
+		mc->eep_len = stat.st_size - 1;
 	} else {
-		eep_len = stat.st_size;
+		mc->eep_len = stat.st_size;
 	}
 
-	ret = read(fd, eep_buf, eep_len);
-	if (ret != eep_len) {
+	ret = read(fd, mc->eep_buf, mc->eep_len);
+	if (ret != mc->eep_len) {
 		fprintf(stderr, "Could not read input file: %s\n",
 			strerror(errno));
 		close(fd);
@@ -93,9 +93,9 @@ static int parse_file(const char *filename)
 
 	printf("[EEPROM identification]\n");
 
-	chipid = eep_read_word(E_CHIPID);
+	chipid = eep_read_word(mc, E_CHIPID);
 	printf("  ChipID        : %04Xh\n", chipid);
-	version = eep_read_word(E_VERSION);
+	version = eep_read_word(mc, E_VERSION);
 	printf("  Version       : %u.%u\n",
 	       FIELD_GET(E_VERSION_VERSION, version),
 	       FIELD_GET(E_VERSION_REVISION, version));
@@ -113,7 +113,7 @@ static int parse_file(const char *filename)
 
 	printf("\n");
 
-	return chip->parse_func();
+	return chip->parse_func(mc);
 }
 
 static void usage(const char *name)
@@ -135,6 +135,7 @@ static void usage(const char *name)
 int main(int argc, char *argv[])
 {
 	const char *appname = basename(argv[0]);
+	struct main_ctx *mc = &__mc;
 	int opt, ret;
 
 	if (argc <= 1)
@@ -155,7 +156,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	ret = parse_file(argv[optind]);
+	ret = parse_file(mc, argv[optind]);
 
 	return ret ? EXIT_FAILURE : EXIT_SUCCESS;
 }

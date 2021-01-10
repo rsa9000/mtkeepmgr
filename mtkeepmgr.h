@@ -28,12 +28,14 @@
 #define E_MACADDR_31_16			0x0006
 #define E_MACADDR_47_32			0x0008
 
-uint16_t eep_read_word(const unsigned offset);
+struct main_ctx;
+
+uint16_t eep_read_word(struct main_ctx *mc, const unsigned offset);
 
 struct chip_desc {
 	const char *name;
 	uint16_t chipid;
-	int (*parse_func)(void);
+	int (*parse_func)(struct main_ctx *mc);
 };
 
 #define CHIP(__name, __chipid, __parse_func)				\
@@ -45,5 +47,11 @@ struct chip_desc {
 	static struct chip_desc *__chip_ ## __name ## __ptr		\
 	__attribute__((used, section(("__chips")))) = 			\
 	&__chip_ ## __name
+
+/* Main working context */
+struct main_ctx {
+	uint8_t eep_buf[0x1000];		/* 4k buffer */
+	unsigned eep_len;			/* Actual EERPOM size */
+};
 
 #endif	/* !_MTKEEPMGR_H_ */

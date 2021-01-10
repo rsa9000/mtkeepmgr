@@ -131,7 +131,7 @@ static const char *rssi_offset_str(const uint8_t val)
 	return buf;
 }
 
-static void mt7610_dump_channel_power(void)
+static void mt7610_dump_channel_power(struct main_ctx *mc)
 {
 	static const unsigned ch_2gh[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 					  12, 13, 14};
@@ -178,7 +178,7 @@ static void mt7610_dump_channel_power(void)
 		sb = &subbands[si];
 		printf("  Subband: %s\n", sb->name);
 		for (ci = 0; ci < sb->nchan; ci += 2) {
-			eeval = eep_read_word(sb->ee_base + ci);
+			eeval = eep_read_word(mc, sb->ee_base + ci);
 			pwr[ci + 0] = FIELD_GET(E_CH_PWR_LO, eeval);
 			pwr[ci + 1] = FIELD_GET(E_CH_PWR_HI, eeval);
 		}
@@ -197,7 +197,7 @@ static void mt7610_dump_channel_power(void)
 	}
 }
 
-static void mt7610_dump_rate_power(void)
+static void mt7610_dump_rate_power(struct main_ctx *mc)
 {
 	static const char *blocks[3] = {"2.4GHz", "5GHz", "STBC"};
 	static const struct {
@@ -245,7 +245,7 @@ static void mt7610_dump_rate_power(void)
 	for (r = rates; r->title_lo || r->title_hi; ++r) {
 		for (i = 0; i < 3; ++i)
 			if (r->off[i])
-				val[i] = eep_read_word(r->off[i]);
+				val[i] = eep_read_word(mc, r->off[i]);
 		if (r->title_lo) {
 			printf("  %-16s:", r->title_lo);
 			for (i = 0; i < 3; ++i) {
@@ -275,14 +275,15 @@ static void mt7610_dump_rate_power(void)
 	}
 }
 
-static void mt7610_read_tssi_tcomp_tbl(unsigned off, int8_t *tbl)
+static void mt7610_read_tssi_tcomp_tbl(struct main_ctx *mc,
+				       unsigned off, int8_t *tbl)
 {
 	uint16_t val;
 	int i;
 
 	/* Read data from eeprom */
 	for (i = 0; i < E_TSSI_TCOMP_N / 2; ++i) {
-		val = eep_read_word(off + 2 * i);
+		val = eep_read_word(mc, off + 2 * i);
 		tbl[2 * i + 0] = (val >> 8) & 0xff;
 		tbl[2 * i + 1] = (val >> 0) & 0xff;
 	}
@@ -320,17 +321,17 @@ static const char *mt7610_dump_tssi_tcomp_tbl(int8_t *tbl)
 	return &buf[1];
 }
 
-static const char *mt7610_dump_tssi_tcomp(unsigned off)
+static const char *mt7610_dump_tssi_tcomp(struct main_ctx *mc, unsigned off)
 {
 	int8_t tbl[E_TSSI_TCOMP_N + 1];	/* Number of points + neutral */
 
-	mt7610_read_tssi_tcomp_tbl(off, tbl);
+	mt7610_read_tssi_tcomp_tbl(mc, off, tbl);
 	mt7610_adj_tssi_tcomp_tbl(tbl);
 
 	return mt7610_dump_tssi_tcomp_tbl(tbl);
 }
 
-static int mt7610_eep_parse(void)
+static int mt7610_eep_parse(struct main_ctx *mc)
 {
 	static const char *ant_div_str[] = {
 		[E_ANT_DIV_DIS] = "No diversity",
@@ -341,29 +342,29 @@ static int mt7610_eep_parse(void)
 	uint16_t val;
 
 	printf("[Device identification]\n");
-	printf("  MacAddr       : %s\n", get_macaddr_str());
-	printf("  PCIDevID      : %04Xh\n", eep_read_word(E_PCI_DEV_ID));
-	printf("  PCIVenID      : %04Xh\n", eep_read_word(E_PCI_VEN_ID));
-	printf("  PCISubsysDevID: %04Xh\n", eep_read_word(E_PCI_SUB_DEV_ID));
-	printf("  PCISubsysVenID: %04Xh\n", eep_read_word(E_PCI_SUB_VEN_ID));
-	printf("  USB Vendor ID : %04Xh\n", eep_read_word(E_USB_VID));
-	printf("  USB Product ID: %04Xh\n", eep_read_word(E_USB_PID));
+	printf("  MacAddr       : %s\n", get_macaddr_str(mc));
+	printf("  PCIDevID      : %04Xh\n", eep_read_word(mc, E_PCI_DEV_ID));
+	printf("  PCIVenID      : %04Xh\n", eep_read_word(mc, E_PCI_VEN_ID));
+	printf("  PCISubsysDevID: %04Xh\n", eep_read_word(mc, E_PCI_SUB_DEV_ID));
+	printf("  PCISubsysVenID: %04Xh\n", eep_read_word(mc, E_PCI_SUB_VEN_ID));
+	printf("  USB Vendor ID : %04Xh\n", eep_read_word(mc, E_USB_VID));
+	printf("  USB Product ID: %04Xh\n", eep_read_word(mc, E_USB_PID));
 	printf("\n");
 
 	printf("[ASIC data]\n");
-	printf("  CMB aux option: %04Xh\n", eep_read_word(E_CMB_AUX_OPT));
-	printf("  XTAL opt???   : %04Xh\n", eep_read_word(E_XTAL_OPT));
+	printf("  CMB aux option: %04Xh\n", eep_read_word(mc, E_CMB_AUX_OPT));
+	printf("  XTAL opt???   : %04Xh\n", eep_read_word(mc, E_XTAL_OPT));
 	printf("\n");
 
 	printf("[NIC configuration]\n");
-	val = eep_read_word(E_NIC_CFG0);
+	val = eep_read_word(mc, E_NIC_CFG0);
 	printf("  Cfg0          : %04Xh\n", val);
 	printf("    RxPath      : %u\n", FIELD_GET(E_NIC_CFG0_RX_PATH, val));
 	printf("    TxPath      : %u\n", FIELD_GET(E_NIC_CFG0_TX_PATH, val));
 	printf("    PA 2GHz     : %s\n", val & E_NIC_CFG0_INT_2G_PA ? "Internal" : "External");
 	printf("    PA 5GHz     : %s\n", val & E_NIC_CFG0_INT_5G_PA ? "Internal" : "External");
 	printf("    PA current  : %u ma\n", val & E_NIC_CFG0_EXT_PA_CURR ? 8 : 16);
-	val = eep_read_word(E_NIC_CFG1);
+	val = eep_read_word(mc, E_NIC_CFG1);
 	printf("  Cfg1          : %04Xh\n", val);
 	printf("    RF Ctrl     : %s\n", val & E_NIC_CFG1_HW_RF_CTRL ? "Hardware" : "Driver");
 	printf("    Ext. TxALC  : %s\n", val & E_NIC_CFG1_EXT_TX_ALC ? "Enable" : "Disable");
@@ -379,7 +380,7 @@ static int mt7610_eep_parse(void)
 	printf("    Int. TxALC  : %s\n", val & E_NIC_CFG1_INT_TX_ALC ? "True" : "False");
 	printf("    Coexistance : %s\n", val & E_NIC_CFG1_COEX ? "True" : "False");
 	printf("    DAC test    : %s\n", val & E_NIC_CFG1_DAC_TEST ? "True" : "False");
-	val = eep_read_word(E_NIC_CFG2);
+	val = eep_read_word(mc, E_NIC_CFG2);
 	printf("  Cfg2          : %04Xh\n", val);
 	printf("    RxStream    : %u\n", FIELD_GET(E_NIC_CFG2_RX_STREAM, val));
 	printf("    TxStream    : %u\n", FIELD_GET(E_NIC_CFG2_TX_STREAM, val));
@@ -390,32 +391,32 @@ static int mt7610_eep_parse(void)
 	printf("\n");
 
 	printf("[Misc params]\n");
-	val = eep_read_word(E_FREQ_OFFSET);
+	val = eep_read_word(mc, E_FREQ_OFFSET);
 	printf("  FreqOffset    : %02Xh\n", FIELD_GET(E_FREQ_OFFSET_FO, val));
-	val = eep_read_word(E_TEMP_2G_TGT_PWR);
+	val = eep_read_word(mc, E_TEMP_2G_TGT_PWR);
 	temp_offset = (int8_t)FIELD_GET(E_TEMP_VAL, val);
 	printf("  TempOffset    : %d\n", temp_offset);
 	printf("\n");
 
 	printf("[Country region code]\n");
-	val = eep_read_word(E_COUNTRY_REGION);
+	val = eep_read_word(mc, E_COUNTRY_REGION);
 	printf("  2GHz country  : %s\n", country_str(FIELD_GET(E_COUNTRY_REGION_2G, val)));
 	printf("  5GHz country  : %s\n", country_str(FIELD_GET(E_COUNTRY_REGION_5G, val)));
 	printf("\n");
 
 	printf("[External LNA gain]\n");
-	val = eep_read_word(E_LNA_GAIN_0);
+	val = eep_read_word(mc, E_LNA_GAIN_0);
 	printf("  2GHz (1-14)   : %s\n",
 	       lna_gain_str(FIELD_GET(E_LNA_GAIN_2G, val)));
 	printf("  5GHz (36-64)  : %s\n",
 	       lna_gain_str(FIELD_GET(E_LNA_GAIN_5G_0, val)));
-	val = eep_read_word(E_LNA_GAIN_1);
+	val = eep_read_word(mc, E_LNA_GAIN_1);
 	printf("  5GHz (100-128): %s\n",
 	       lna_gain_str(FIELD_GET(E_LNA_GAIN_5G_1, val)));
-	val = eep_read_word(E_LNA_GAIN_2);
+	val = eep_read_word(mc, E_LNA_GAIN_2);
 	printf("  5GHz (132-165): %s\n",
 	       lna_gain_str(FIELD_GET(E_LNA_GAIN_5G_2, val)));
-	val = eep_read_word(E_LNA_5G_SUBBANDS);
+	val = eep_read_word(mc, E_LNA_5G_SUBBANDS);
 	printf("  5GHz mid chan : %s\n",
 	       boundary_ch_str(FIELD_GET(E_LNA_5G_SUBBANDS_MID_CH, val), 100));
 	printf("  5GHz higt chan: %s\n",
@@ -423,12 +424,12 @@ static int mt7610_eep_parse(void)
 	printf("\n");
 
 	printf("[BBP RSSI offsets]\n");
-	val = eep_read_word(E_RSSI_OFFSET_2G);
+	val = eep_read_word(mc, E_RSSI_OFFSET_2G);
 	printf("  2GHz Offset0  : %s\n",
 	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_2G_0, val)));
 	printf("  2GHz Offset1  : %s\n",
 	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_2G_1, val)));
-	val = eep_read_word(E_RSSI_OFFSET_5G);
+	val = eep_read_word(mc, E_RSSI_OFFSET_5G);
 	printf("  5GHz Offset0  : %s\n",
 	       rssi_offset_str(FIELD_GET(E_RSSI_OFFSET_5G_0, val)));
 	printf("  5GHz Offset1  : %s\n",
@@ -436,46 +437,47 @@ static int mt7610_eep_parse(void)
 	printf("\n");
 
 	printf("[Tx power target]\n");
-	val = eep_read_word(E_TEMP_2G_TGT_PWR);
+	val = eep_read_word(mc, E_TEMP_2G_TGT_PWR);
 	printf("  2GHz (20MHz)  : %s\n",
 	       pwr_target_str(FIELD_GET(E_PWR_2G_TARGET, val)));
-	val = eep_read_word(E_PWR_5G_80M_TGT);
+	val = eep_read_word(mc, E_PWR_5G_80M_TGT);
 	printf("  5GHz (20MHz)  : %s\n",
 	       pwr_target_str(FIELD_GET(E_PWR_5G_TARGET, val)));
 	printf("\n");
 
 	printf("[Tx power delta]\n");
-	val = eep_read_word(E_40M_PWR_DELTA);
+	val = eep_read_word(mc, E_40M_PWR_DELTA);
 	printf("  2GHz 20/40MHz : %s\n",
 	       pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_2G, val)));
 	printf("  5GHz 20/40MHz : %s\n",
 	       pwr_delta_str(FIELD_GET(E_40M_PWR_DELTA_5G, val)));
-	val = eep_read_word(E_PWR_5G_80M_TGT);
+	val = eep_read_word(mc, E_PWR_5G_80M_TGT);
 	printf("  5GHz 20/80MHz : %s\n",
 	       pwr_delta_str(FIELD_GET(E_PWR_5G_80M_DELTA, val)));
 	printf("\n");
 
 	printf("[Per channel power table]\n");
-	mt7610_dump_channel_power();
+	mt7610_dump_channel_power(mc);
 	printf("\n");
 
 	printf("[Per rate power table]\n");
-	mt7610_dump_rate_power();
+	mt7610_dump_rate_power(mc);
 	printf("\n");
 
 	printf("[TSSI temperature compensation]\n");
-	val = eep_read_word(E_TX_AGC_STEP);
+	val = eep_read_word(mc, E_TX_AGC_STEP);
 	if (FIELD_GET(E_TX_AGC_STEP_VAL, val) == 0xff)
 		printf("  Tx AGC step   : 1.0 dBm (default)\n");
 	else
 		printf("  Tx AGC step   : %.1f dBm\n",
 		       (double)FIELD_GET(E_TX_AGC_STEP_VAL, val) / 2);
-	val = eep_read_word(E_TSSI_TCOMP_5G_BOUND);
-	printf("  5GHz boundary : %u (channel)\n", FIELD_GET(E_TSSI_TCOMP_5G_BOUND_VAL, val));
+	val = eep_read_word(mc, E_TSSI_TCOMP_5G_BOUND);
+	printf("  5GHz boundary : %u (channel)\n",
+	       FIELD_GET(E_TSSI_TCOMP_5G_BOUND_VAL, val));
 	printf("  5GHz group 1  : {%s}\n",
-	       mt7610_dump_tssi_tcomp(E_TSSI_TCOMP_5G_1_BASE));
+	       mt7610_dump_tssi_tcomp(mc, E_TSSI_TCOMP_5G_1_BASE));
 	printf("  5GHz group 2  : {%s}\n",
-	       mt7610_dump_tssi_tcomp(E_TSSI_TCOMP_5G_2_BASE));
+	       mt7610_dump_tssi_tcomp(mc, E_TSSI_TCOMP_5G_2_BASE));
 	printf("\n");
 
 	return 0;
