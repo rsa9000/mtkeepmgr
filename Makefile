@@ -10,6 +10,8 @@ OBJ=\
 
 DEP=$(OBJ:%.o=%.d)
 
+DEFS=
+
 CFLAGS += -Wall -g
 
 DEPFLAGS=-MMD -MP
@@ -21,7 +23,7 @@ $(TARGET): $(OBJ)
 	$(CC) $(LDFLAGS) $^ -o $@
 
 %.o: %.c
-	$(CC) $(DEPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(DEPFLAGS) $(CFLAGS) $(DEFS) -c $< -o $@
 
 .PHONY: clean
 clean:

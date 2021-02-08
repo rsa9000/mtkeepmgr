@@ -74,6 +74,15 @@ static int parse_file(struct main_ctx *mc)
 	return chip->parse_func(mc);
 }
 
+#define CON_USAGE_FILE	"-F <eepdump>"
+
+#define CON_OPTSTR	"F:"
+#if 1
+#define CON_USAGE	"{" CON_USAGE_FILE "}"
+#else
+#define CON_USAGE	CON_USAGE_FILE
+#endif
+
 static void usage(const char *name)
 {
 	printf(
@@ -81,7 +90,7 @@ static void usage(const char *name)
 		"Copyright (c) 2016-2021, Sergey Ryazanov <ryazanov.s.a@gmail.com>\n"
 		"\n"
 		"Usage:\n"
-		"  %s [-h] -F <eepdump>\n"
+		"  %s [-h] " CON_USAGE "\n"
 		"\n"
 		"Options:\n"
 		"  -F <eepdump>\n"
@@ -102,7 +111,7 @@ int main(int argc, char *argv[])
 	if (argc <= 1)
 		usage(appname);
 
-	while ((opt = getopt(argc, argv, "F:h")) != -1) {
+	while ((opt = getopt(argc, argv, CON_OPTSTR "h")) != -1) {
 		switch (opt) {
 		case 'F':
 			mc->con = &con_file;
