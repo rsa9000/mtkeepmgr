@@ -27,6 +27,7 @@ extern struct chip_desc *__stop___chips;
 		if ((__chip = __start___chips[i]))	/* to skip possible padding */
 
 extern const struct connector_desc con_file;
+extern const struct connector_desc con_usb;
 
 /* The main utility execution context */
 static struct main_ctx __mc;
@@ -75,10 +76,17 @@ static int parse_file(struct main_ctx *mc)
 }
 
 #define CON_USAGE_FILE	"-F <eepdump>"
+#ifdef CONFIG_CON_USB
+#define CON_USAGE_USB	" | -U"
+#define CON_OPTSTR_USB	"U"
+#else
+#define CON_USAGE_USB	""
+#define CON_OPTSTR_USB	""
+#endif
 
-#define CON_OPTSTR	"F:"
-#if 1
-#define CON_USAGE	"{" CON_USAGE_FILE "}"
+#define CON_OPTSTR	"F:" CON_OPTSTR_USB
+#if defined(CONFIG_CON_USB)
+#define CON_USAGE	"{" CON_USAGE_FILE CON_USAGE_USB "}"
 #else
 #define CON_USAGE	CON_USAGE_FILE
 #endif
@@ -95,6 +103,10 @@ static void usage(const char *name)
 		"Options:\n"
 		"  -F <eepdump>\n"
 		"           Read EEPROM dump from <eepdump> file.\n"
+#ifdef CONFIG_CON_USB
+		"  -U       Read EEPROM data from a first USB device, which VID/PID\n"
+		"           are known.\n"
+#endif
 		"  -h       Print this help\n"
 		"\n",
 		name
@@ -117,6 +129,12 @@ int main(int argc, char *argv[])
 			mc->con = &con_file;
 			con_arg = optarg;
 			break;
+#ifdef CONFIG_CON_USB
+		case 'U':
+			mc->con = &con_usb;
+			con_arg = NULL;
+			break;
+#endif
 		case 'h':
 			usage(appname);
 			return EXIT_SUCCESS;
