@@ -5,9 +5,28 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 #include <libusb.h>
 
 #include "mtkeepmgr.h"
+
+#define USB_MATCH_FILTER_BUSNUM		BIT(0)	/* Bus number match */
+#define USB_MATCH_FILTER_DEVADDR	BIT(1)	/* Device address match */
+#define USB_MATCH_FILTER_ID		BIT(2)	/* Device VID/PID match */
+#define USB_MATCH_FILTER_PATH		BIT(3)	/* Path match */
+#define USB_MATCH_FILTER_PATH_EXACT	BIT(4)	/* Require exact path match */
+
+#define USB_MAX_PATHLEN			10
+
+struct usb_match_filter {
+	unsigned int mask;
+	uint8_t busnum;		/* Bus number */
+	uint8_t devaddr;	/* Device address */
+	uint16_t vid;		/* Vendor ID */
+	uint16_t pid;		/* Product ID */
+	unsigned int plen;	/* Device path length */
+	uint8_t path[USB_MAX_PATHLEN];	/* Sequence hub's ports */
+};
 
 static const struct dev_id {
 	uint16_t vid;
@@ -26,6 +45,109 @@ struct usb_priv {
 	struct libusb_context *ctx;
 	struct libusb_device_handle *udh;
 };
+
+static int usb_parse_filter_arg(const char *str, struct usb_match_filter *f)
+{
+	char *__str, *s, *e, *p;
+	int ret = -1;
+
+	f->mask = 0;
+	if (str[0] == '\0' || strcasecmp(str, "any") == 0)
+		return 0;
+
+	__str = strdup(str);
+	if (!__str) {
+		fprintf(stderr, "usbcon: unable to allocate buffer for argument(s) parsing\n");
+		return -1;
+	}
+
+	s = __str;
+	e = __str + strlen(__str);
+	for (p = s; p < e; s = p + 1) {
+		unsigned int v1, v2;
+		int n, l1, l2;
+
+		p = strchr(s, ',') ? : e;
+		*p = '\0';
+
+		n = sscanf(s, "0x%x%n:0x%x%n", &v1, &l1, &v2, &l2);
+		if (n == 2 && l1 == 6 && l2 == 13) {
+			f->mask = USB_MATCH_FILTER_ID;
+			f->vid = v1;
+			f->pid = v2;
+			continue;
+		}
+		n = sscanf(s, "%x%n:%x%n", &v1, &l1, &v2, &l2);
+		if (n == 2 && l1 == 4 && l2 == 9) {
+			f->mask |= USB_MATCH_FILTER_ID;
+			f->vid = v1;
+			f->pid = v2;
+			continue;
+		}
+		n = sscanf(s, "%u:%u%n", &v1, &v2, &l2);
+		if (n == 2 && s[l2] == '\0' && v1 <= 0xff && v2 <= 0xff) {
+			f->mask |= USB_MATCH_FILTER_BUSNUM |
+				   USB_MATCH_FILTER_DEVADDR;
+			f->busnum = v1;
+			f->devaddr = v2;
+			continue;
+		}
+		if (strchr(s, '/')) {
+			n = sscanf(s, "%u%n", &v1, &l2);
+			if (!n || s[l2] != '/' || v1 > 0xff) {
+				fprintf(stderr, "usbcon: unable to parse bus number of device path -- %s\n", s);
+				goto exit;
+			}
+			f->mask |= USB_MATCH_FILTER_BUSNUM |
+				   USB_MATCH_FILTER_PATH;
+			f->busnum = v1;
+
+			f->plen = 0;
+			for (s += l2 + 1; s[-1] != '\0'; s += l2 + 1) {
+				if (s[0] == '\0')
+					break;
+
+				n = sscanf(s, "%u%n", &v1, &l2);
+				if (!n || (s[l2] != '/' && s[l2] != '\0') ||
+				    v1 > 0xff) {
+					fprintf(stderr, "usbcon: unable to parse %d port in the device path -- %s\n",
+						f->plen + 1, s);
+					goto exit;
+				} else if (f->plen >= ARRAY_SIZE(f->path)) {
+					fprintf(stderr, "usbcon: too long device path, maximum allowed length is %d port elements\n",
+						(int)ARRAY_SIZE(f->path));
+					goto exit;
+				}
+				f->path[f->plen++] = v1;
+			}
+			if (!f->plen) {
+				fprintf(stderr, "usbcon: device path should include at least one hub port\n");
+				goto exit;
+			}
+
+			if (s[-1] != '/')
+				f->mask |= USB_MATCH_FILTER_PATH_EXACT;
+
+			continue;
+		}
+
+		fprintf(stderr, "usbcon: unable to parse argument token -- %s\n", s);
+		goto exit;
+	}
+
+	if (f->mask & USB_MATCH_FILTER_DEVADDR &&
+	    f->mask & USB_MATCH_FILTER_PATH) {
+		fprintf(stderr, "usbcon: unable to use device address and device path filters simultaneously\n");
+		goto exit;
+	}
+
+	ret = 0;
+
+exit:
+	free(__str);
+
+	return ret;
+}
 
 /**
  * This routine reads calibration data that are look like EEPROM data and
@@ -95,9 +217,14 @@ static int usb_eep2buf(struct main_ctx *mc)
 static int usb_init(struct main_ctx *mc, const char *arg_str)
 {
 	struct usb_priv *upd = mc->con_priv;
+	struct usb_match_filter filter;
 	struct libusb_device **list = NULL;
 	int list_len, i, j;
 	int res, ret = -EIO;
+
+	res = usb_parse_filter_arg(arg_str, &filter);
+	if (res)
+		return res;
 
 	memset(upd, 0x00, sizeof(*upd));
 
@@ -117,6 +244,8 @@ static int usb_init(struct main_ctx *mc, const char *arg_str)
 
 	for (i = 0; i < list_len; ++i) {
 		struct libusb_device_descriptor desc;
+		uint8_t busnum, devaddr;
+		int knownid;
 
 		res = libusb_get_device_descriptor(list[i], &desc);
 		if (res) {
@@ -124,16 +253,63 @@ static int usb_init(struct main_ctx *mc, const char *arg_str)
 				libusb_strerror(res));
 			goto error;
 		}
+		busnum = libusb_get_bus_number(list[i]);
+		devaddr = libusb_get_device_address(list[i]);
+
+		if (filter.mask & USB_MATCH_FILTER_BUSNUM &&
+		    busnum != filter.busnum)
+				continue;
+		if (filter.mask & USB_MATCH_FILTER_DEVADDR &&
+		    devaddr != filter.devaddr)
+				continue;
+		if (filter.mask & USB_MATCH_FILTER_PATH) {
+			uint8_t path[ARRAY_SIZE(filter.path)];
+			int plen;
+
+			plen = libusb_get_port_numbers(list[i], path,
+						       ARRAY_SIZE(path));
+			if (plen == LIBUSB_ERROR_OVERFLOW) {
+				fprintf(stderr, "usbcon: device bus=%u,addr=%u,vid=%04x,pid=%04x has path length greater than %d elements and will be skipped\n",
+					busnum, devaddr, desc.idVendor,
+					desc.idProduct, (int)ARRAY_SIZE(path));
+				continue;
+			}
+
+			if (plen < filter.plen)
+				continue;
+			if (filter.mask & USB_MATCH_FILTER_PATH_EXACT &&
+			    plen != filter.plen)
+				continue;
+
+			if (memcmp(filter.path, path, filter.plen) != 0)
+				continue;
+		}
 
 		/* Check against the table of known devices */
+		knownid = -1;
 		for (j = 0; j < ARRAY_SIZE(devs); ++j) {
 			if (desc.idVendor != devs[j].vid ||
 			    desc.idProduct != devs[j].pid)
 				continue;
+			knownid = j;
 			break;
 		}
-		if (j == ARRAY_SIZE(devs))	/* No VID/PID match */
+
+		if (filter.mask & USB_MATCH_FILTER_ID) {
+			if (desc.idVendor != filter.vid ||
+			    desc.idProduct != filter.pid)
+				continue;
+			if (knownid == -1)
+				fprintf(stderr, "usbcon: device bus=%u,addr=%u,vid=%04x,pid=%04x has unknown VID/PID, but match is forced by the filter\n",
+						busnum, devaddr, desc.idVendor,
+						desc.idProduct);
+		} else if (knownid == -1) {
+			if (filter.mask)	/* Have at least one filter */
+				fprintf(stderr, "usbcon: device bus=%u,addr=%u,vid=%04x,pid=%04x has unknown VID/PID and will be skipped\n",
+						busnum, devaddr, desc.idVendor,
+						desc.idProduct);
 			continue;
+		}
 
 		break;	/* Got a match, break the search loop */
 	}

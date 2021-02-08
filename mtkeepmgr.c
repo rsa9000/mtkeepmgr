@@ -77,8 +77,8 @@ static int parse_file(struct main_ctx *mc)
 
 #define CON_USAGE_FILE	"-F <eepdump>"
 #ifdef CONFIG_CON_USB
-#define CON_USAGE_USB	" | -U"
-#define CON_OPTSTR_USB	"U"
+#define CON_USAGE_USB	" | -U <dev-sel>"
+#define CON_OPTSTR_USB	"U:"
 #else
 #define CON_USAGE_USB	""
 #define CON_OPTSTR_USB	""
@@ -104,8 +104,37 @@ static void usage(const char *name)
 		"  -F <eepdump>\n"
 		"           Read EEPROM dump from <eepdump> file.\n"
 #ifdef CONFIG_CON_USB
-		"  -U       Read EEPROM data from a first USB device, which VID/PID\n"
-		"           are known.\n"
+		"  -U <dev-sel>\n"
+		"           Work with USB device, which is specified by a selector <dev-sel>.\n"
+		"           Utiltity supported a few types of selection rules.\n"
+		"           To select device by a USB bus number and corresponding address on the\n"
+		"           bus use '<busnum>:<devaddr>' format, where <busnum> and <devaddr>\n"
+		"           should be specified in the decimal form (e.g. '1:193').\n"
+		"           To select first device with a specific IDs, use <VID>:<PID>, where\n"
+		"           <VID> and <PID> should be specified in the cannonical 4 symbol hex\n"
+		"           form (e.g. '148f:7610'). This form could be used not only to narrow\n"
+		"           device selection range, but also to force device selection, when\n"
+		"           IDs of a new device is not yet embedded to the utility table of\n"
+		"           supported devices.\n"
+		"           To be absolutely specific, you could select a device by its path\n"
+		"           (i.e. sequence of HUB ports from root to device) on a bus. Use this\n"
+		"           format to utilize path selector:\n"
+		"           '<busnum>/<hub1portnum>[/<hub2port>[/<hub3port>[...]]][/]'. Please\n"
+		"           note optional leading path slash. If the leading slash is specified\n"
+		"           then path treated as a required prefix of a full device path. If the\n"
+		"           leading slash is omited, then path treated as an exact full device\n"
+		"           path. So you could specify full device path or only a path to an USB\n"
+		"           that you like to use to connect your device.\n"
+		"           Several selectors could be specified at once by concatenating them\n"
+		"           with comma (e.g. <busnum>:<devaddr>,<VID>:<PID>). Such format could\n"
+		"           be used to force yet unknown device usage and in the same time select\n"
+		"           one specific device of multiple connected to a host. NB: device\n"
+		"           address and device path selectors are mutually exclusive and should\n"
+		"           not be used together.\n"
+		"           There is a special keyword 'any'. If it specified, then the utility\n"
+		"           will open first device with a known VID/PID pair. This is useful\n"
+		"           when you have only one device connected to the host and you do not\n"
+		"           want to type a longer option argument.\n"
 #endif
 		"  -h       Print this help\n"
 		"\n",
@@ -132,7 +161,7 @@ int main(int argc, char *argv[])
 #ifdef CONFIG_CON_USB
 		case 'U':
 			mc->con = &con_usb;
-			con_arg = NULL;
+			con_arg = optarg;
 			break;
 #endif
 		case 'h':
