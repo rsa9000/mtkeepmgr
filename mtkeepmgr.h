@@ -8,6 +8,7 @@
 #define _MTKEEPMGR_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 #define ARRAY_SIZE(a)	(sizeof(a)/sizeof(a[0]))
 
@@ -48,8 +49,19 @@ struct chip_desc {
 	__attribute__((used, section(("__chips")))) = 			\
 	&__chip_ ## __name
 
+struct connector_desc {
+	const char * const name;
+	size_t priv_sz;
+
+	int (*init)(struct main_ctx *mc, const char *arg_str);
+	void (*clean)(struct main_ctx *mc);
+};
+
 /* Main working context */
 struct main_ctx {
+	const struct connector_desc *con;	/* Selected connector */
+	void *con_priv;				/* Connector state */
+
 	uint8_t eep_buf[0x1000];		/* 4k buffer */
 	unsigned eep_len;			/* Actual EERPOM size */
 };

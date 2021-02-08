@@ -1,7 +1,7 @@
 /**
  * MediaTek EEPROM management utility
  *
- * Copyright (c) 2016-2020, Sergey Ryazanov <ryazanov.s.a@gmail.com>
+ * Copyright (c) 2016-2021, Sergey Ryazanov <ryazanov.s.a@gmail.com>
  */
 
 #include <stdio.h>
@@ -26,6 +26,8 @@ extern struct chip_desc *__stop___chips;
 	for (__i = 0; __i < &__stop___chips - __start___chips; ++__i)	\
 		if ((__chip = __start___chips[i]))	/* to skip possible padding */
 
+extern const struct connector_desc con_file;
+
 /* The main utility execution context */
 static struct main_ctx __mc;
 
@@ -41,55 +43,11 @@ uint16_t eep_read_word(struct main_ctx *mc, const unsigned offset)
 	return le16toh(val);
 }
 
-static int parse_file(struct main_ctx *mc, const char *filename)
+static int parse_file(struct main_ctx *mc)
 {
-	int fd, ret;
-	struct stat stat;
 	uint16_t chipid, version;
 	struct chip_desc *chip;
 	int i;
-
-	fd = open(filename, O_RDONLY);
-	if (-1 == fd) {
-		fprintf(stderr, "Could not open input file %s: %s\n",
-			filename, strerror(errno));
-		return -1;
-	}
-
-	if (fstat(fd, &stat)) {
-		fprintf(stderr, "Could not stat file %s: %s\n",
-			filename, strerror(errno));
-		close(fd);
-		return -1;
-	}
-
-	if (!stat.st_size) {
-		fprintf(stderr, "Input file is empty");
-		close(fd);
-		return -1;
-	}
-
-	if (stat.st_size > sizeof(mc->eep_buf)) {
-		fprintf(stderr, "Input file too big (%lu bytes), expect not more than %zu bytes, file will be readed partially\n",
-			stat.st_size, sizeof(mc->eep_buf));
-		mc->eep_len = sizeof(mc->eep_buf);
-	} else if (stat.st_size % 2 != 0) {
-		fprintf(stderr, "Input file size is not even (%lu bytes), will read one byte less\n",
-			stat.st_size);
-		mc->eep_len = stat.st_size - 1;
-	} else {
-		mc->eep_len = stat.st_size;
-	}
-
-	ret = read(fd, mc->eep_buf, mc->eep_len);
-	if (ret != mc->eep_len) {
-		fprintf(stderr, "Could not read input file: %s\n",
-			strerror(errno));
-		close(fd);
-		return -1;
-	}
-
-	close(fd);
 
 	printf("[EEPROM identification]\n");
 
@@ -120,12 +78,14 @@ static void usage(const char *name)
 {
 	printf(
 		"MediaTek EEPROM management utility\n"
-		"Copyright (c) 2016-2020, Sergey Ryazanov <ryazanov.s.a@gmail.com>\n"
+		"Copyright (c) 2016-2021, Sergey Ryazanov <ryazanov.s.a@gmail.com>\n"
 		"\n"
 		"Usage:\n"
-		"  %s [-h] <eeprom.bin>\n"
+		"  %s [-h] -F <eepdump>\n"
 		"\n"
 		"Options:\n"
+		"  -F <eepdump>\n"
+		"           Read EEPROM dump from <eepdump> file.\n"
 		"  -h       Print this help\n"
 		"\n",
 		name
@@ -136,13 +96,18 @@ int main(int argc, char *argv[])
 {
 	const char *appname = basename(argv[0]);
 	struct main_ctx *mc = &__mc;
+	char *con_arg = NULL;
 	int opt, ret;
 
 	if (argc <= 1)
 		usage(appname);
 
-	while ((opt = getopt(argc, argv, "h")) != -1) {
+	while ((opt = getopt(argc, argv, "F:h")) != -1) {
 		switch (opt) {
+		case 'F':
+			mc->con = &con_file;
+			con_arg = optarg;
+			break;
 		case 'h':
 			usage(appname);
 			return EXIT_SUCCESS;
@@ -151,12 +116,27 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (optind == argc) {
-		fprintf(stderr, "Input file notspecified, use -h option to see more details\n");
-		return EXIT_FAILURE;
+	if (!mc->con) {
+		fprintf(stderr, "Connector (data source) was not specified\n");
+		goto exit;
 	}
 
-	ret = parse_file(mc, argv[optind]);
+	mc->con_priv = malloc(mc->con->priv_sz);
+	if (!mc->con_priv) {
+		fprintf(stderr, "Unable to allocate memory for a connector private data\n");
+		goto exit;
+	}
+
+	ret = mc->con->init(mc, con_arg);
+	if (ret)
+		goto exit;
+
+	ret = parse_file(mc);
+
+	mc->con->clean(mc);
+
+exit:
+	free(mc->con_priv);
 
 	return ret ? EXIT_FAILURE : EXIT_SUCCESS;
 }
