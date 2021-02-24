@@ -44,7 +44,7 @@ uint16_t eep_read_word(struct main_ctx *mc, const unsigned offset)
 	return le16toh(val);
 }
 
-static int parse_file(struct main_ctx *mc)
+static int act_eep_dump(struct main_ctx *mc, int argc, char *argv[])
 {
 	uint16_t chipid, version;
 	struct chip_desc *chip;
@@ -76,6 +76,16 @@ static int parse_file(struct main_ctx *mc)
 	return chip->parse_func(mc);
 }
 
+static const struct action {
+	const char * const name;
+	int (*func)(struct main_ctx *mc, int argc, char *argv[]);
+} actions[] = {
+	{
+		.name = "dump",
+		.func = act_eep_dump,
+	}
+};
+
 #define CON_USAGE_FILE	"-F <eepdump>"
 #ifdef CONFIG_CON_USB
 #define CON_USAGE_USB	" | -U <dev-sel>"
@@ -99,7 +109,7 @@ static void usage(const char *name)
 		"Copyright (c) 2016-2021, Sergey Ryazanov <ryazanov.s.a@gmail.com>\n"
 		"\n"
 		"Usage:\n"
-		"  %s [-h] " CON_USAGE "\n"
+		"  %s [-h] " CON_USAGE " [<action> [<actarg>]]\n"
 		"\n"
 		"Options:\n"
 		"  -F <eepdump>\n"
@@ -138,6 +148,15 @@ static void usage(const char *name)
 		"           want to type a longer option argument.\n"
 #endif
 		"  -h       Print this help\n"
+		"  <action> Optional argument, which specifies the <action> that should be\n"
+		"           performed (see actions list below). If no action is specified, then\n"
+		"           the 'dump' action is performed by default.\n"
+		"  <actarg> Action argument if the action accepts any (see details below in the\n"
+		"           detailed actions list).\n"
+		"\n"
+		"Available actions:\n"
+		"  dump     Read & parse the EEPROM content and then dump parsed results to the\n"
+		"           terminal (this is the default action).\n"
 		"\n",
 		name
 	);
@@ -147,8 +166,9 @@ int main(int argc, char *argv[])
 {
 	const char *appname = basename(argv[0]);
 	struct main_ctx *mc = &__mc;
+	const struct action *act = NULL;
 	char *con_arg = NULL;
-	int opt, ret;
+	int i, opt, ret = -EINVAL;
 
 	if (argc <= 1)
 		usage(appname);
@@ -178,6 +198,22 @@ int main(int argc, char *argv[])
 		goto exit;
 	}
 
+	if (optind >= argc) {
+		act = &actions[0];	/* Select first action by default */
+	} else {
+		for (i = 0; i < ARRAY_SIZE(actions); ++i) {
+			if (strcasecmp(argv[optind], actions[i].name) != 0)
+				continue;
+			act = &actions[i];
+			break;
+		}
+		if (!act) {
+			fprintf(stderr, "Unknown action -- %s\n", argv[optind]);
+			goto exit;
+		}
+		optind++;
+	}
+
 	mc->con_priv = malloc(mc->con->priv_sz);
 	if (!mc->con_priv) {
 		fprintf(stderr, "Unable to allocate memory for a connector private data\n");
@@ -188,7 +224,7 @@ int main(int argc, char *argv[])
 	if (ret)
 		goto exit;
 
-	ret = parse_file(mc);
+	ret = act->func(mc, argc - optind, argv + optind);
 
 	mc->con->clean(mc);
 
