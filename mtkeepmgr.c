@@ -64,7 +64,8 @@ static int parse_file(struct main_ctx *mc)
 			break;
 
 	if (!chip || chip->chipid != chipid) {
-		fprintf(stderr, "EEPROM dump is for unknown or unsupported chip\n");
+		fprintf(stderr, "EEPROM dump is for unknown or unsupported chip (chipid:0x%04x)\n",
+			chipid);
 		return -1;
 	}
 
