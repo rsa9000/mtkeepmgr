@@ -1,10 +1,11 @@
 /**
  * Various misc utilities
  *
- * Copyright (c) 2016, Sergey Ryazanov <ryazanov.s.a@gmail.com>
+ * Copyright (c) 2016-2021, Sergey Ryazanov <ryazanov.s.a@gmail.com>
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 #include "mtkeepmgr.h"
 
@@ -22,4 +23,29 @@ const char *get_macaddr_str(void)
 		 val2 & 0xff, val2 >> 8);
 
 	return buf;
+}
+
+void hexdump_print(const uint8_t *buf, unsigned int len, unsigned int flags)
+{
+	const uint8_t *p = buf;
+	int i, j;
+
+	for (i = 0; i < len; i += 16) {
+		if (flags & HEXDUMP_F_ADDR)
+			printf("%08x", i);
+		for (j = 0; j < 16; ++j) {
+			if (j % 8 == 0)
+				printf(" ");
+			if (i + j < len)
+				printf(" %02x", p[i + j]);
+			else
+				printf("   ");
+		}
+		printf(" |");
+		for (j = 0; j < 16 && i + j < len; ++j)
+			printf("%c", isprint(p[i + j]) ? p[i + j] : '.');
+		for (; j < 16; ++j)
+			printf(" ");
+		printf("|\n");
+	}
 }
