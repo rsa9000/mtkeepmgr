@@ -47,7 +47,7 @@ uint16_t eep_read_word(struct main_ctx *mc, const unsigned offset)
 static int act_eep_dump(struct main_ctx *mc, int argc, char *argv[])
 {
 	uint16_t chipid, version;
-	struct chip_desc *chip;
+	struct chip_desc *chip = NULL;
 	int i;
 
 	printf("[EEPROM identification]\n");
