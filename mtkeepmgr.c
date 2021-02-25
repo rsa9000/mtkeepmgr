@@ -134,6 +134,16 @@ static const struct action {
 #define CON_USAGE	CON_USAGE_FILE
 #endif
 
+static void usage_chips(void)
+{
+	struct chip_desc *chip = NULL;
+	int i;
+
+	for_each_chip(chip, i) {
+		printf("%s%s", !i ? "" : ", ", chip->name);
+	}
+}
+
 static void usage(const char *name)
 {
 	printf(
@@ -194,6 +204,10 @@ static void usage(const char *name)
 		"\n",
 		name
 	);
+
+	printf("Supported EEPROM formats (chips): ");
+	usage_chips();
+	printf("\n\n");
 }
 
 int main(int argc, char *argv[])
