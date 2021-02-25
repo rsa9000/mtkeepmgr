@@ -76,6 +76,35 @@ static int act_eep_dump(struct main_ctx *mc, int argc, char *argv[])
 	return chip->parse_func(mc);
 }
 
+static int act_eep_save(struct main_ctx *mc, int argc, char *argv[])
+{
+	FILE *fp;
+	const uint8_t *buf = mc->eep_buf;
+	int eep_len = mc->eep_len;
+	size_t res;
+
+	if (argc < 1) {
+		fprintf(stderr, "Output file for EEPROM saving is not specified, aborting\n");
+		return -EINVAL;
+	}
+
+	fp = fopen(argv[0], "wb");
+	if (!fp) {
+		fprintf(stderr, "Unable to open output file for writing: %s\n",
+			strerror(errno));
+		return -errno;
+	}
+
+	res = fwrite(buf, 1, eep_len, fp);
+	if (res != eep_len)
+		fprintf(stderr, "Unable to save whole EEPROM contents: %s\n",
+			strerror(errno));
+
+	fclose(fp);
+
+	return res == eep_len ? 0 : -EIO;
+}
+
 static const struct action {
 	const char * const name;
 	int (*func)(struct main_ctx *mc, int argc, char *argv[]);
@@ -83,6 +112,9 @@ static const struct action {
 	{
 		.name = "dump",
 		.func = act_eep_dump,
+	}, {
+		.name = "save",
+		.func = act_eep_save,
 	}
 };
 
@@ -157,6 +189,8 @@ static void usage(const char *name)
 		"Available actions:\n"
 		"  dump     Read & parse the EEPROM content and then dump parsed results to the\n"
 		"           terminal (this is the default action).\n"
+		"  save <file>\n"
+		"           Save fetched raw EEPROM content to the file <file>.\n"
 		"\n",
 		name
 	);
