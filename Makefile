@@ -2,6 +2,7 @@ TARGET=mtkeepmgr
 
 OBJ=\
 	con_file.o	\
+	mt7601.o	\
 	mt7610.o	\
 	mt7620.o	\
 	mt7628.o	\
