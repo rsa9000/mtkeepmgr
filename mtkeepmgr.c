@@ -159,7 +159,7 @@ static void usage_chips(void)
 static void usage(const char *name)
 {
 	printf(
-		"MediaTek EEPROM management utility\n"
+		"MediaTek EEPROM management utility v0.2\n"
 		"Copyright (c) 2016-2021, Sergey Ryazanov <ryazanov.s.a@gmail.com>\n"
 		"\n"
 		"Usage:\n"
