@@ -230,8 +230,10 @@ int main(int argc, char *argv[])
 	char *con_arg = NULL;
 	int i, opt, ret = -EINVAL;
 
-	if (argc <= 1)
+	if (argc <= 1) {
 		usage(appname);
+		return EXIT_SUCCESS;
+	}
 
 	while ((opt = getopt(argc, argv, CON_OPTSTR "h")) != -1) {
 		switch (opt) {
