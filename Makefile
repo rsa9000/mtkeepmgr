@@ -10,6 +10,7 @@ OBJ=\
 	mt7662.o	\
 	mt7663.o	\
 	mtkeepmgr.o	\
+	rt5592.o	\
 	utils.o
 
 DEP=$(OBJ:%.o=%.d)
