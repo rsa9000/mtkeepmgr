@@ -46,6 +46,10 @@ static const struct dev_id {
 } devs[] = {
 	{0x148f, 0x7610},	/* Default ID of MT7610U */
 	{0x148f, 0x761a},	/* TP-Link T2U dongle */
+	/* mt7612 */
+	{0x0846, 0x9053}, /* NetGear, Inc. A6210 */
+	{0x148f, 0x7612},	/* Default ID of MT7612U */
+	{0x0e8d, 0x7612}, /* MediaTek Inc. MT7612U 802.11a/b/g/n/ac Wireless Adapter */
 };
 
 /* MediaTek specific (vendor) USB device commands */
